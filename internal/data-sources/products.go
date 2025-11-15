@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/yourname/terraform-provider-aeza/internal/client"
-	"github.com/yourname/terraform-provider-aeza/internal/provider"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/client"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/provider"
 )
 
 func ProductsDataSource() *schema.Resource {
