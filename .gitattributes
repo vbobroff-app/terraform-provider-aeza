@@ -1,0 +1,14 @@
+# Auto-detect text files and perform LF normalization
+* text=auto
+
+# These files are text and should be normalized (convert crlf => lf)
+*.go text
+*.md text
+*.txt text
+*.mod text
+*.sum text
+*.tf text
+*.hcl text
+*.yaml text
+*.yml text
+*.json text

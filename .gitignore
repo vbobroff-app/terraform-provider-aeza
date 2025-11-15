@@ -1,0 +1,71 @@
+# Binaries for programs and plugins
+terraform-provider-aeza
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Terraform files
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.terraform.lock.hcl
+
+# Test and build directories
+/dist/
+/bin/
+/test-terraform/
+/examples/**/.terraform/
+/examples/**/*.tfstate*
+/examples/**/.terraform.lock.hcl
+
+# Go specific
+/go/pkg/
+/go/bin/
+
+# Dependency directories
+/vendor/
+
+# Debug files
+debug
+*.log
+
+# Environment files
+.env
+*.env
+
+# Temporary files
+tmp/
+temp/
+
+# Documentation
+/docs/site/
+/docs/public/
+
+# Coverage files
+*.coverprofile
+coverage.txt
+profile.cov
+
+# Go workspace file
+go.work
