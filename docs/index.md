@@ -20,6 +20,10 @@ terraform-provider-aeza/
 │       ├── client.go
 │       ├── models.go
 │       └── errors.go
+    └── source-models/
+|       ├── models.go 
+    └── interfaces/
+|       ├── clients.go     
 ├── pkg/
 │   └── utils/
 |       ├── errors.go

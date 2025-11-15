@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/client"
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/data-sources"
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/resources"
 )
@@ -23,7 +24,7 @@ func New() *schema.Provider {
 			"base_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "https://my.aeza.net/api",
+				DefaultFunc: schema.EnvDefaultFunc("AEZA_BASE_URL", "https://my.aeza.net/api/v2"),
 				Description: "Base URL for Aeza API",
 			},
 		},
@@ -38,15 +39,25 @@ func New() *schema.Provider {
 			"aeza_service_types": data_sources.ServiceTypesDataSource(),
 		},
 
-		ConfigureContextFunc: configureProvider,
+		ConfigureContextFunc: providerConfigure,
 	}
 }
 
-func configureProvider(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	config := &Config{
-		APIKey:  d.Get("api_key").(string),
-		BaseURL: d.Get("base_url").(string),
+func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	apiKey := d.Get("api_key").(string)
+	baseURL := d.Get("base_url").(string)
+
+	var diags diag.Diagnostics
+
+	client, err := client.NewClient(baseURL, apiKey)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to create Aeza client",
+			Detail:   err.Error(),
+		})
+		return nil, diags
 	}
 
-	return config, nil
+	return client, diags
 }

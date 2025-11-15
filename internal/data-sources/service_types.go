@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/provider"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/interfaces"
 )
 
 func ServiceTypesDataSource() *schema.Resource {
@@ -17,26 +17,22 @@ func ServiceTypesDataSource() *schema.Resource {
 		ReadContext: serviceTypesRead,
 
 		Schema: map[string]*schema.Schema{
-			"types": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of service types",
+			"service_types": {
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"slug": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Service type slug",
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
 						},
 						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Service type name",
+							Type:     schema.TypeString,
+							Computed: true,
 						},
-						"order": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Display order",
+						"slug": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
@@ -46,33 +42,26 @@ func ServiceTypesDataSource() *schema.Resource {
 }
 
 func serviceTypesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
+	client := meta.(interfaces.DataClient)
 
-	config := meta.(*provider.Config)
-	apiClient, err := config.Client()
+	serviceTypes, err := client.ListServiceTypes(ctx)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to create client: %w", err))
+		return diag.FromErr(fmt.Errorf("error fetching service types: %w", err))
 	}
 
-	serviceTypes, err := apiClient.GetServiceTypes(ctx)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to get service types: %w", err))
-	}
-
-	typeList := make([]map[string]interface{}, len(serviceTypes.Data.Items))
-	for i, serviceType := range serviceTypes.Data.Items {
-		typeList[i] = map[string]interface{}{
-			"slug":  serviceType.Slug,
-			"name":  serviceType.Name,
-			"order": serviceType.Order,
+	serviceTypeList := make([]map[string]interface{}, len(serviceTypes))
+	for i, serviceType := range serviceTypes {
+		serviceTypeList[i] = map[string]interface{}{
+			"id":   serviceType.ID,
+			"name": serviceType.Name,
+			"slug": serviceType.Slug,
 		}
 	}
 
-	if err := d.Set("types", typeList); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to set service types: %w", err))
+	if err := d.Set("service_types", serviceTypeList); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId("service_types")
-
-	return diags
+	return nil
 }

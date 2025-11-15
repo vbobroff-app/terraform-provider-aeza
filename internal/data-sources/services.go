@@ -7,8 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/provider"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/interfaces"
 )
+
+// Убираем зависимость от provider, используем интерфейс
+type servicesDataSource struct {
+	client interfaces.DataClient
+}
 
 func ServicesDataSource() *schema.Resource {
 	return &schema.Resource{
@@ -18,45 +23,41 @@ func ServicesDataSource() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"services": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of services",
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Service ID",
+							Type:     schema.TypeInt,
+							Computed: true,
 						},
 						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Service name",
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Service type (vps, hicpu, etc.)",
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Service status",
+							Type:     schema.TypeString,
+							Computed: true,
 						},
-						"product_name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Product name",
+						"location_id": {
+							Type:     schema.TypeInt,
+							Computed: true,
 						},
-						"location_code": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Location code",
+						"product_id": {
+							Type:     schema.TypeInt,
+							Computed: true,
 						},
 						"created_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Creation timestamp",
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"updated_at": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
@@ -66,37 +67,31 @@ func ServicesDataSource() *schema.Resource {
 }
 
 func servicesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
+	client := meta.(interfaces.DataClient)
 
-	config := meta.(*provider.Config)
-	apiClient, err := config.Client()
+	services, err := client.ListServices(ctx)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to create client: %w", err))
+		return diag.FromErr(fmt.Errorf("error fetching services: %w", err))
 	}
 
-	services, err := apiClient.GetServices(ctx)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to get services: %w", err))
-	}
-
-	serviceList := make([]map[string]interface{}, len(services.Data.Items))
-	for i, service := range services.Data.Items {
+	serviceList := make([]map[string]interface{}, len(services))
+	for i, service := range services {
 		serviceList[i] = map[string]interface{}{
-			"id":            service.ID,
-			"name":          service.Name,
-			"type":          service.Type,
-			"status":        service.Status,
-			"product_name":  service.ProductName,
-			"location_code": service.LocationCode,
-			"created_at":    service.CreatedAt.Format("2006-01-02T15:04:05Z"),
+			"id":          service.ID,
+			"name":        service.Name,
+			"type":        service.Type,
+			"status":      service.Status,
+			"location_id": service.LocationID,
+			"product_id":  service.ProductID,
+			"created_at":  service.CreatedAt,
+			"updated_at":  service.UpdatedAt,
 		}
 	}
 
 	if err := d.Set("services", serviceList); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to set services: %w", err))
+		return diag.FromErr(err)
 	}
 
 	d.SetId("services")
-
-	return diags
+	return nil
 }

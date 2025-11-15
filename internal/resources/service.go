@@ -3,14 +3,12 @@ package resources
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/client"
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/provider"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/interfaces"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/source-models"
 )
 
 func ServiceResource() *schema.Resource {
@@ -19,146 +17,133 @@ func ServiceResource() *schema.Resource {
 
 		CreateContext: serviceCreate,
 		ReadContext:   serviceRead,
+		UpdateContext: serviceUpdate,
 		DeleteContext: serviceDelete,
 
 		Schema: map[string]*schema.Schema{
-			"product_id": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Product ID for the service",
-			},
 			"name": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "Name of the service",
-				ValidateFunc: validation.StringLenBetween(1, 64),
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Type of service (vps, hicpu, etc.)",
-				Default:     "vps",
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"location_id": {
+				Type:     schema.TypeInt,
+				Required: true,
+			},
+			"product_id": {
+				Type:     schema.TypeInt,
+				Required: true,
 			},
 			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Current status of the service",
-			},
-			"product_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the product",
-			},
-			"location_code": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Location code of the service",
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Creation timestamp",
+				Type:     schema.TypeString,
+				Computed: true,
 			},
-		},
-
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(30 * time.Minute),
-			Delete: schema.DefaultTimeout(20 * time.Minute),
+			"updated_at": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
 func serviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*provider.Config)
-	apiClient, err := config.Client()
+	client := meta.(interfaces.ResourceClient)
+
+	req := source_models.ServiceCreateRequest{
+		Name:       d.Get("name").(string),
+		Type:       d.Get("type").(string),
+		LocationID: int64(d.Get("location_id").(int)),
+		ProductID:  int64(d.Get("product_id").(int)),
+	}
+
+	resp, err := client.CreateService(ctx, req)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to create client: %w", err))
+		return diag.FromErr(fmt.Errorf("error creating service: %w", err))
 	}
 
-	createRequest := &client.CreateServiceRequest{
-		ProductID: d.Get("product_id").(int),
-		Name:      d.Get("name").(string),
-		Type:      d.Get("type").(string),
-	}
-
-	service, err := apiClient.CreateService(ctx, createRequest)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to create service: %w", err))
-	}
-
-	d.SetId(service.Data.ID)
-
+	d.SetId(fmt.Sprintf("%d", resp.ID))
 	return serviceRead(ctx, d, meta)
 }
 
 func serviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
+	client := meta.(interfaces.ResourceClient)
 
-	config := meta.(*provider.Config)
-	apiClient, err := config.Client()
+	id, err := parseIntID(d.Id())
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to create client: %w", err))
+		return diag.FromErr(err)
 	}
 
-	services, err := apiClient.GetServices(ctx)
+	resp, err := client.GetService(ctx, id)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to get services: %w", err))
+		return diag.FromErr(fmt.Errorf("error reading service: %w", err))
 	}
 
-	// Find the service by ID
-	var foundService *client.Service
-	for _, service := range services.Data.Items {
-		if service.ID == d.Id() {
-			foundService = &service
-			break
+	service := resp.Service
+	d.Set("name", service.Name)
+	d.Set("type", service.Type)
+	d.Set("location_id", service.LocationID)
+	d.Set("product_id", service.ProductID)
+	d.Set("status", service.Status)
+	d.Set("created_at", service.CreatedAt)
+	d.Set("updated_at", service.UpdatedAt)
+
+	return nil
+}
+
+func serviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(interfaces.ResourceClient)
+
+	id, err := parseIntID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if d.HasChanges("name", "type", "location_id", "product_id") {
+		req := source_models.ServiceCreateRequest{
+			Name:       d.Get("name").(string),
+			Type:       d.Get("type").(string),
+			LocationID: int64(d.Get("location_id").(int)),
+			ProductID:  int64(d.Get("product_id").(int)),
+		}
+
+		err := client.UpdateService(ctx, id, req)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error updating service: %w", err))
 		}
 	}
 
-	if foundService == nil {
-		d.SetId("")
-		return diags
-	}
-
-	// Set attributes
-	if err := d.Set("name", foundService.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to set name: %w", err))
-	}
-	if err := d.Set("type", foundService.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to set type: %w", err))
-	}
-	if err := d.Set("status", foundService.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to set status: %w", err))
-	}
-	if err := d.Set("product_name", foundService.ProductName); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to set product_name: %w", err))
-	}
-	if err := d.Set("location_code", foundService.LocationCode); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to set location_code: %w", err))
-	}
-	if err := d.Set("created_at", foundService.CreatedAt.Format(time.RFC3339)); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to set created_at: %w", err))
-	}
-
-	return diags
+	return serviceRead(ctx, d, meta)
 }
 
 func serviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
+	client := meta.(interfaces.ResourceClient)
 
-	config := meta.(*provider.Config)
-	apiClient, err := config.Client()
+	id, err := parseIntID(d.Id())
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to create client: %w", err))
+		return diag.FromErr(err)
 	}
 
-	err = apiClient.DeleteService(ctx, d.Id())
+	err = client.DeleteService(ctx, id)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to delete service: %w", err))
+		return diag.FromErr(fmt.Errorf("error deleting service: %w", err))
 	}
 
 	d.SetId("")
-	return diags
+	return nil
+}
+
+func parseIntID(id string) (int64, error) {
+	var intID int64
+	_, err := fmt.Sscanf(id, "%d", &intID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid ID format: %s", id)
+	}
+	return intID, nil
 }

@@ -7,8 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/client"
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/provider"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/interfaces"
 )
 
 func ProductsDataSource() *schema.Resource {
@@ -18,71 +17,34 @@ func ProductsDataSource() *schema.Resource {
 		ReadContext: productsRead,
 
 		Schema: map[string]*schema.Schema{
-			"type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Filter products by type (vps, hicpu, etc.)",
-			},
-			"location": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Filter products by location",
-			},
 			"products": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of products",
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Product ID",
+							Type:     schema.TypeInt,
+							Computed: true,
 						},
 						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Product name",
+							Type:     schema.TypeString,
+							Computed: true,
 						},
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Product type",
+						"description": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
-						"cpu": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "CPU cores",
+						"price": {
+							Type:     schema.TypeFloat,
+							Computed: true,
 						},
-						"ram": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "RAM in MB",
+						"currency": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
-						"disk": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Disk space in GB",
-						},
-						"price_hourly": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Hourly price in kopecks",
-						},
-						"price_monthly": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Monthly price in kopecks",
-						},
-						"location": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Product location",
-						},
-						"mode": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Product mode (shared, dedicated, etc.)",
+						"category": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
@@ -92,88 +54,29 @@ func ProductsDataSource() *schema.Resource {
 }
 
 func productsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
+	client := meta.(interfaces.DataClient)
 
-	config := meta.(*provider.Config)
-	apiClient, err := config.Client()
+	products, err := client.ListProducts(ctx)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to create client: %w", err))
+		return diag.FromErr(fmt.Errorf("error fetching products: %w", err))
 	}
 
-	products, err := apiClient.GetProducts(ctx)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to get products: %w", err))
-	}
-
-	filterType := d.Get("type").(string)
-	filterLocation := d.Get("location").(string)
-
-	var filteredProducts []client.Product
-	for _, product := range products.Data.Items {
-		// Apply filters
-		if filterType != "" && product.Type != filterType {
-			continue
-		}
-		if filterLocation != "" {
-			if location, ok := product.Group.Payload["label"].(string); ok {
-				if location != filterLocation {
-					continue
-				}
-			}
-		}
-		filteredProducts = append(filteredProducts, product)
-	}
-
-	productList := make([]map[string]interface{}, len(filteredProducts))
-	for i, product := range filteredProducts {
-		// Extract configuration
-		cpu, ram, disk := extractProductConfiguration(product.Configuration)
-
-		// Extract location from group payload
-		location := ""
-		if label, ok := product.Group.Payload["label"].(string); ok {
-			location = label
-		}
-
-		// Extract mode from group payload
-		mode := ""
-		if modeVal, ok := product.Group.Payload["mode"].(string); ok {
-			mode = modeVal
-		}
-
+	productList := make([]map[string]interface{}, len(products))
+	for i, product := range products {
 		productList[i] = map[string]interface{}{
-			"id":            product.ID,
-			"name":          product.Name,
-			"type":          product.Type,
-			"cpu":           cpu,
-			"ram":           ram,
-			"disk":          disk,
-			"price_hourly":  product.Prices.Hour,
-			"price_monthly": product.Prices.Month,
-			"location":      location,
-			"mode":          mode,
+			"id":          product.ID,
+			"name":        product.Name,
+			"description": product.Description,
+			"price":       product.Price,
+			"currency":    product.Currency,
+			"category":    product.Category,
 		}
 	}
 
 	if err := d.Set("products", productList); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to set products: %w", err))
+		return diag.FromErr(err)
 	}
 
 	d.SetId("products")
-
-	return diags
-}
-
-func extractProductConfiguration(config []client.ProductConfig) (cpu, ram, disk int) {
-	for _, item := range config {
-		switch item.Slug {
-		case "cpu":
-			cpu = item.Base
-		case "ram":
-			ram = item.Base
-		case "rom":
-			disk = item.Base
-		}
-	}
-	return
+	return nil
 }
