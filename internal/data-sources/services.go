@@ -1,3 +1,4 @@
+// internal/data-sources/services.go
 package data_sources
 
 import (
@@ -35,20 +36,44 @@ func ServicesDataSource() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"status": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"location_id": {
-							Type:     schema.TypeInt,
+						"current_status": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"last_status": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"ip": {
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"product_id": {
 							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"owner_id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"location_code": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"payment_term": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"auto_prolong": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"backups": {
+							Type:     schema.TypeBool,
 							Computed: true,
 						},
 						"created_at": {
@@ -77,14 +102,20 @@ func servicesRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 	serviceList := make([]map[string]interface{}, len(services))
 	for i, service := range services {
 		serviceList[i] = map[string]interface{}{
-			"id":          service.ID,
-			"name":        service.Name,
-			"type":        service.Type,
-			"status":      service.Status,
-			"location_id": service.LocationID,
-			"product_id":  service.ProductID,
-			"created_at":  service.CreatedAt,
-			"updated_at":  service.UpdatedAt,
+			"id":             service.ID,
+			"name":           service.Name,
+			"status":         service.Status,
+			"current_status": service.CurrentStatus,
+			"last_status":    service.LastStatus,
+			"ip":             service.IP,
+			"product_id":     service.ProductID,
+			"owner_id":       service.OwnerID,
+			"location_code":  service.LocationCode,
+			"payment_term":   service.PaymentTerm,
+			"auto_prolong":   service.AutoProlong,
+			"backups":        service.Backups,
+			"created_at":     service.CreatedAt,
+			"updated_at":     service.UpdatedAt,
 		}
 	}
 

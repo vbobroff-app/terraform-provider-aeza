@@ -1,3 +1,4 @@
+// data-sources//service_types.go
 package data_sources
 
 import (
@@ -22,16 +23,16 @@ func ServiceTypesDataSource() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeInt,
+						"slug": {
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"slug": {
-							Type:     schema.TypeString,
+						"order": {
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 					},
@@ -52,9 +53,9 @@ func serviceTypesRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	serviceTypeList := make([]map[string]interface{}, len(serviceTypes))
 	for i, serviceType := range serviceTypes {
 		serviceTypeList[i] = map[string]interface{}{
-			"id":   serviceType.ID,
-			"name": serviceType.Name,
-			"slug": serviceType.Slug,
+			"slug":  serviceType.Slug,
+			"name":  serviceType.Name,
+			"order": serviceType.Order,
 		}
 	}
 

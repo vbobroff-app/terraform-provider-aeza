@@ -1,3 +1,4 @@
+// internal/provider/provider.go
 package provider
 
 import (
@@ -24,7 +25,7 @@ func New() *schema.Provider {
 			"base_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("AEZA_BASE_URL", "https://my.aeza.net/api/v2"),
+				DefaultFunc: schema.EnvDefaultFunc("AEZA_BASE_URL", "https://my.aeza.net/api"),
 				Description: "Base URL for Aeza API",
 			},
 		},
@@ -48,6 +49,15 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	baseURL := d.Get("base_url").(string)
 
 	var diags diag.Diagnostics
+
+	// Добавляем валидацию
+	if apiKey == "" {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "API Key is required",
+		})
+		return nil, diags
+	}
 
 	client, err := client.NewClient(baseURL, apiKey)
 	if err != nil {

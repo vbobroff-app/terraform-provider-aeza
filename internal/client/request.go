@@ -1,3 +1,4 @@
+// internal/client/request.go
 package client
 
 import (
@@ -5,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"io"
 	"net/http"
 )
@@ -38,14 +40,15 @@ func (r *Request) Do(ctx context.Context, result interface{}) error {
 		bodyReader = bytes.NewBuffer(jsonData)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, r.method, r.client.host+r.path, bodyReader)
+	url := r.client.host + r.path
+
+	req, err := http.NewRequestWithContext(ctx, r.method, url, bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+r.client.token)
+	req.Header.Set("X-API-Key", r.client.apiKey)
 	req.Header.Set("Content-Type", "application/json")
-
 	resp, err := r.client.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to execute request: %w", err)

@@ -1,3 +1,4 @@
+// data-sources/products.go
 package data_sources
 
 import (
@@ -30,21 +31,24 @@ func ProductsDataSource() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"description": {
+						"type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"price": {
-							Type:     schema.TypeFloat,
+						"group_id": {
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"currency": {
+						"service_handler": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"category": {
-							Type:     schema.TypeString,
+						"prices": {
+							Type:     schema.TypeMap,
 							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeFloat,
+							},
 						},
 					},
 				},
@@ -64,12 +68,12 @@ func productsRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 	productList := make([]map[string]interface{}, len(products))
 	for i, product := range products {
 		productList[i] = map[string]interface{}{
-			"id":          product.ID,
-			"name":        product.Name,
-			"description": product.Description,
-			"price":       product.Price,
-			"currency":    product.Currency,
-			"category":    product.Category,
+			"id":              product.ID,
+			"name":            product.Name,
+			"type":            product.Type,
+			"group_id":        product.GroupID,
+			"service_handler": product.ServiceHandler,
+			"prices":          product.Prices,
 		}
 	}
 

@@ -1,3 +1,4 @@
+// internal/client/client
 package client
 
 import (
@@ -10,44 +11,44 @@ import (
 
 type Client struct {
 	host       string
-	token      string
+	apiKey     string
 	httpClient *http.Client
 }
 
-func NewClient(host, token string) (*Client, error) {
+func NewClient(host, apiKey string) (*Client, error) {
 	return &Client{
 		host:       host,
-		token:      token,
+		apiKey:     apiKey,
 		httpClient: &http.Client{},
 	}, nil
 }
 
-// DataClient methods
 func (c *Client) ListServices(ctx context.Context) ([]source_models.Service, error) {
 	var response source_models.ListServicesResponse
 	err := c.NewRequest("GET", "/services", nil).Do(ctx, &response)
 	if err != nil {
 		return nil, err
 	}
-	return response.Services, nil
+
+	return response.Data.Items, nil
 }
 
 func (c *Client) ListProducts(ctx context.Context) ([]source_models.Product, error) {
 	var response source_models.ListProductsResponse
-	err := c.NewRequest("GET", "/products", nil).Do(ctx, &response)
+	err := c.NewRequest("GET", "/services/products", nil).Do(ctx, &response)
 	if err != nil {
 		return nil, err
 	}
-	return response.Products, nil
+	return response.Data.Items, nil // Теперь берем из Data.Items
 }
 
 func (c *Client) ListServiceTypes(ctx context.Context) ([]source_models.ServiceType, error) {
 	var response source_models.ListServiceTypesResponse
-	err := c.NewRequest("GET", "/service-types", nil).Do(ctx, &response)
+	err := c.NewRequest("GET", "/services/types", nil).Do(ctx, &response)
 	if err != nil {
 		return nil, err
 	}
-	return response.ServiceTypes, nil
+	return response.Data.Items, nil // Теперь берем из Data.Items
 }
 
 // Resource methods

@@ -1,15 +1,26 @@
+YOUR_NAME = vbobroff-app
 BINARY_NAME=terraform-provider-aeza
-VERSION=1.0.0
+VERSION=0.1.0
 GOOS?=$(shell go env GOOS)
 GOARCH?=$(shell go env GOARCH)
 
+TEST_DIR = test-terraform
+PLUGIN_PATH = $(TEST_DIR)/.terraform/plugins/registry.terraform.io/$(YOUR_NAME)/aeza/$(VERSION)/$(GOOS)_$(GOARCH)
+
 .PHONY: build clean test install
+
+print-vars:
+	@echo "BINARY_NAME: $(BINARY_NAME)"
+	@echo "VERSION: $(VERSION)"
+	@echo "GOOS: $(GOOS)"
+	@echo "GOARCH: $(GOARCH)"
+	@echo "YOUR_NAME: $(YOUR_NAME)"
 
 build:
 	@echo "Building $(BINARY_NAME)..."
 	@go build -o $(BINARY_NAME) ./cmd/terraform-provider-aeza
 
-build-all:
+build-all-platforms:
 	@echo "Building for all platforms..."
 	@GOOS=linux GOARCH=amd64 go build -o bin/linux/amd64/$(BINARY_NAME) ./cmd/terraform-provider-aeza
 	@GOOS=darwin GOARCH=amd64 go build -o bin/darwin/amd64/$(BINARY_NAME) ./cmd/terraform-provider-aeza
@@ -29,9 +40,14 @@ test-race:
 	@go test -race -v ./...
 
 install: build
-	@echo "Installing provider..."
-	@mkdir -p ~/.terraform.d/plugins/local/yourname/aeza/$(VERSION)/$(GOOS)_$(GOARCH)
-	@cp $(BINARY_NAME) ~/.terraform.d/plugins/local/yourname/aeza/$(VERSION)/$(GOOS)_$(GOARCH)/$(BINARY_NAME)_v$(VERSION)
+	@echo "Installing provider to test directory..."
+	@mkdir -p $(PLUGIN_PATH)
+	@cp $(BINARY_NAME) $(PLUGIN_PATH)/$(BINARY_NAME)_v$(VERSION)
+	@echo "Provider installed to: $(PLUGIN_PATH)"
+
+init: 
+	@rm -f $(TEST_DIR)/.terraform.lock.hcl
+	@cd $(TEST_DIR) && terraform init
 
 fmt:
 	@echo "Formatting code..."

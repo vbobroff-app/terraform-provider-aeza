@@ -1,3 +1,4 @@
+// resources/service.go
 package resources
 
 import (
@@ -25,19 +26,29 @@ func ServiceResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"type": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"location_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-			},
 			"product_id": {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
+			"location_code": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"payment_term": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "month",
+			},
+			"auto_prolong": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 			"status": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ip": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -52,15 +63,15 @@ func ServiceResource() *schema.Resource {
 		},
 	}
 }
-
 func serviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(interfaces.ResourceClient)
 
 	req := source_models.ServiceCreateRequest{
-		Name:       d.Get("name").(string),
-		Type:       d.Get("type").(string),
-		LocationID: int64(d.Get("location_id").(int)),
-		ProductID:  int64(d.Get("product_id").(int)),
+		Name:         d.Get("name").(string),
+		ProductID:    int64(d.Get("product_id").(int)),
+		LocationCode: d.Get("location_code").(string),
+		PaymentTerm:  d.Get("payment_term").(string),
+		AutoProlong:  d.Get("auto_prolong").(bool),
 	}
 
 	resp, err := client.CreateService(ctx, req)
@@ -87,10 +98,12 @@ func serviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 
 	service := resp.Service
 	d.Set("name", service.Name)
-	d.Set("type", service.Type)
-	d.Set("location_id", service.LocationID)
 	d.Set("product_id", service.ProductID)
+	d.Set("location_code", service.LocationCode)
+	d.Set("payment_term", service.PaymentTerm)
+	d.Set("auto_prolong", service.AutoProlong)
 	d.Set("status", service.Status)
+	d.Set("ip", service.IP)
 	d.Set("created_at", service.CreatedAt)
 	d.Set("updated_at", service.UpdatedAt)
 
@@ -105,12 +118,15 @@ func serviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("name", "type", "location_id", "product_id") {
+	// Проверяем только те поля которые можно обновлять
+	if d.HasChanges("name", "payment_term", "auto_prolong") {
 		req := source_models.ServiceCreateRequest{
-			Name:       d.Get("name").(string),
-			Type:       d.Get("type").(string),
-			LocationID: int64(d.Get("location_id").(int)),
-			ProductID:  int64(d.Get("product_id").(int)),
+			Name:        d.Get("name").(string),
+			PaymentTerm: d.Get("payment_term").(string),
+			AutoProlong: d.Get("auto_prolong").(bool),
+			// ProductID и LocationCode обычно нельзя менять после создания
+			ProductID:    int64(d.Get("product_id").(int)),
+			LocationCode: d.Get("location_code").(string),
 		}
 
 		err := client.UpdateService(ctx, id, req)
