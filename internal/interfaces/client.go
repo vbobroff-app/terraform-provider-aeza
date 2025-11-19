@@ -4,22 +4,22 @@ package interfaces
 import (
 	"context"
 
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/source-models"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
 )
 
 // DataClient интерфейс для data sources
 type DataClient interface {
-	ListServices(ctx context.Context) ([]source_models.Service, error)
-	ListProducts(ctx context.Context) ([]source_models.Product, error)
-	ListServiceTypes(ctx context.Context) ([]source_models.ServiceType, error)
+	ListServices(ctx context.Context) ([]models.Service, error)
+	ListProducts(ctx context.Context) ([]models.Product, error)
+	ListServiceTypes(ctx context.Context) ([]models.ServiceType, error)
 }
 
 // ResourceClient интерфейс для resources
 type ResourceClient interface {
 	DataClient // Включаем все методы data sources
 
-	CreateService(ctx context.Context, req source_models.ServiceCreateRequest) (*source_models.ServiceCreateResponse, error)
-	GetService(ctx context.Context, id int64) (*source_models.ServiceGetResponse, error)
-	UpdateService(ctx context.Context, id int64, req source_models.ServiceCreateRequest) error
+	CreateService(ctx context.Context, req models.ServiceCreateRequest) (*models.ServiceCreateResponse, error)
+	GetService(ctx context.Context, id int64) (*models.ServiceGetResponse, error)
+	UpdateService(ctx context.Context, id int64, req models.ServiceCreateRequest) error
 	DeleteService(ctx context.Context, id int64) error
 }

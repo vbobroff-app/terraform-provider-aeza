@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/interfaces"
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/source-models"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
 )
 
 func ServiceResource() *schema.Resource {
@@ -20,6 +20,10 @@ func ServiceResource() *schema.Resource {
 		ReadContext:   serviceRead,
 		UpdateContext: serviceUpdate,
 		DeleteContext: serviceDelete,
+
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -66,7 +70,7 @@ func ServiceResource() *schema.Resource {
 func serviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(interfaces.ResourceClient)
 
-	req := source_models.ServiceCreateRequest{
+	req := models.ServiceCreateRequest{
 		Name:         d.Get("name").(string),
 		ProductID:    int64(d.Get("product_id").(int)),
 		LocationCode: d.Get("location_code").(string),
@@ -74,9 +78,20 @@ func serviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}
 		AutoProlong:  d.Get("auto_prolong").(bool),
 	}
 
+	// Добавляем отладочный вывод
+	fmt.Printf("DEBUG: Creating service with request: %+v\n", req)
+
 	resp, err := client.CreateService(ctx, req)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating service: %w", err))
+	}
+
+	// ⚠️ ДОБАВЬТЕ ПРОВЕРКУ ОТВЕТА ⚠️
+	fmt.Printf("DEBUG: CreateService response: %+v\n", resp)
+
+	// Проверяем что ID не равен 0 (что указывает на ошибку)
+	if resp.ID == 0 {
+		return diag.FromErr(fmt.Errorf("API returned ID=0, indicating creation failed. Response: %+v", resp))
 	}
 
 	d.SetId(fmt.Sprintf("%d", resp.ID))
@@ -120,7 +135,7 @@ func serviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}
 
 	// Проверяем только те поля которые можно обновлять
 	if d.HasChanges("name", "payment_term", "auto_prolong") {
-		req := source_models.ServiceCreateRequest{
+		req := models.ServiceCreateRequest{
 			Name:        d.Get("name").(string),
 			PaymentTerm: d.Get("payment_term").(string),
 			AutoProlong: d.Get("auto_prolong").(bool),

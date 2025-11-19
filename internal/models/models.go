@@ -1,5 +1,5 @@
 // internal/client/models.go
-package source_models
+package models
 
 // Service представляет услугу в Aeza
 type Service struct {
@@ -99,9 +99,9 @@ type ServiceCreateRequest struct {
 
 // ServiceCreateResponse - ответ на создание услуги
 type ServiceCreateResponse struct {
-	ID     int64   `json:"id"`
-	Status string  `json:"status"`
-	Error  *string `json:"error,omitempty"`
+	ID     int64                   `json:"id"`
+	Status string                  `json:"status"`
+	Error  *map[string]interface{} `json:"error,omitempty"` // Меняем *string на *map[string]interface{}
 }
 
 // ServiceGetResponse - ответ на запрос услуги

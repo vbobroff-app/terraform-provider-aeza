@@ -35,9 +35,10 @@ func New() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"aeza_services":      data_sources.ServicesDataSource(),
-			"aeza_products":      data_sources.ProductsDataSource(),
-			"aeza_service_types": data_sources.ServiceTypesDataSource(),
+			"aeza_services":       data_sources.ServicesDataSource(),
+			"aeza_products":       data_sources.ProductsDataSource(),
+			"aeza_service_types":  data_sources.ServiceTypesDataSource(),
+			"aeza_service_groups": data_sources.ServiceGroupsData(),
 		},
 
 		ConfigureContextFunc: providerConfigure,

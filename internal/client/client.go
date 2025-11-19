@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/source-models"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
 )
 
 type Client struct {
@@ -15,16 +15,16 @@ type Client struct {
 	httpClient *http.Client
 }
 
-func NewClient(host, apiKey string) (*Client, error) {
+func NewClient(baseUrl, apiKey string) (*Client, error) {
 	return &Client{
-		host:       host,
+		host:       baseUrl,
 		apiKey:     apiKey,
 		httpClient: &http.Client{},
 	}, nil
 }
 
-func (c *Client) ListServices(ctx context.Context) ([]source_models.Service, error) {
-	var response source_models.ListServicesResponse
+func (c *Client) ListServices(ctx context.Context) ([]models.Service, error) {
+	var response models.ListServicesResponse
 	err := c.NewRequest("GET", "/services", nil).Do(ctx, &response)
 	if err != nil {
 		return nil, err
@@ -33,8 +33,8 @@ func (c *Client) ListServices(ctx context.Context) ([]source_models.Service, err
 	return response.Data.Items, nil
 }
 
-func (c *Client) ListProducts(ctx context.Context) ([]source_models.Product, error) {
-	var response source_models.ListProductsResponse
+func (c *Client) ListProducts(ctx context.Context) ([]models.Product, error) {
+	var response models.ListProductsResponse
 	err := c.NewRequest("GET", "/services/products", nil).Do(ctx, &response)
 	if err != nil {
 		return nil, err
@@ -42,8 +42,8 @@ func (c *Client) ListProducts(ctx context.Context) ([]source_models.Product, err
 	return response.Data.Items, nil // Теперь берем из Data.Items
 }
 
-func (c *Client) ListServiceTypes(ctx context.Context) ([]source_models.ServiceType, error) {
-	var response source_models.ListServiceTypesResponse
+func (c *Client) ListServiceTypes(ctx context.Context) ([]models.ServiceType, error) {
+	var response models.ListServiceTypesResponse
 	err := c.NewRequest("GET", "/services/types", nil).Do(ctx, &response)
 	if err != nil {
 		return nil, err
@@ -52,17 +52,27 @@ func (c *Client) ListServiceTypes(ctx context.Context) ([]source_models.ServiceT
 }
 
 // Resource methods
-func (c *Client) CreateService(ctx context.Context, req source_models.ServiceCreateRequest) (*source_models.ServiceCreateResponse, error) {
-	var response source_models.ServiceCreateResponse
+func (c *Client) CreateService(ctx context.Context, req models.ServiceCreateRequest) (*models.ServiceCreateResponse, error) {
+	var response models.ServiceCreateResponse
+
+	// Добавляем логирование запроса
+	fmt.Printf("DEBUG: API CreateService request: %+v\n", req)
+
+	// ... существующий код ...
+
 	err := c.NewRequest("POST", "/services", req).Do(ctx, &response)
 	if err != nil {
 		return nil, err
 	}
+
+	// Добавляем логирование ответа
+	fmt.Printf("DEBUG: API CreateService response: %+v\n", response)
+
 	return &response, nil
 }
 
-func (c *Client) GetService(ctx context.Context, id int64) (*source_models.ServiceGetResponse, error) {
-	var response source_models.ServiceGetResponse
+func (c *Client) GetService(ctx context.Context, id int64) (*models.ServiceGetResponse, error) {
+	var response models.ServiceGetResponse
 	err := c.NewRequest("GET", fmt.Sprintf("/services/%d", id), nil).Do(ctx, &response)
 	if err != nil {
 		return nil, err
@@ -70,10 +80,40 @@ func (c *Client) GetService(ctx context.Context, id int64) (*source_models.Servi
 	return &response, nil
 }
 
-func (c *Client) UpdateService(ctx context.Context, id int64, req source_models.ServiceCreateRequest) error {
+func (c *Client) UpdateService(ctx context.Context, id int64, req models.ServiceCreateRequest) error {
 	return c.NewRequest("PUT", fmt.Sprintf("/services/%d", id), req).Do(ctx, nil)
 }
 
 func (c *Client) DeleteService(ctx context.Context, id int64) error {
 	return c.NewRequest("DELETE", fmt.Sprintf("/services/%d", id), nil).Do(ctx, nil)
+}
+
+func (r *Request) AddQueryParam(key, value string) *Request {
+	r.queryParams[key] = value
+	return r
+}
+
+func (r *Request) SetQueryParams(params map[string]string) *Request {
+	for key, value := range params {
+		r.queryParams[key] = value
+	}
+	return r
+}
+
+// GetProductGroups возвращает все группы продуктов
+// GetServiceGroups получает список групп услуг с опциональным выбором по типу
+func (c *Client) GetServiceGroups(ctx context.Context, serviceType string) (*models.ProductGroupsResponse, error) {
+	var response models.ProductGroupsResponse
+
+	req := c.NewRequest("GET", "/v2/services/groups", nil)
+	if serviceType != "" {
+		req.AddQueryParam("type", serviceType)
+	}
+
+	err := req.Do(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
 }
