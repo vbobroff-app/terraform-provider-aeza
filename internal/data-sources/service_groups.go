@@ -37,33 +37,70 @@ func ServiceGroupsData() *schema.Resource {
 							Computed:    true,
 							Description: "Group name",
 						},
-						"type_slug": {
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Service type slug (e.g., 'vps', 'dedicated')",
 						},
-						"type_name": {
+						"location": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Service type display name",
+							Description: "Location label (e.g., 'NL-SHARED', 'US-DEDICATED')",
+						},
+						"country_code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Country code (e.g., 'nl', 'de', 'fr')",
+						},
+						"server_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Server type (e.g., 'shared', 'dedicated')",
+						},
+						"is_disabled": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Whether the group is disabled",
 						},
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Group description",
 						},
+						"features": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Localized features description",
+						},
 						"service_handler": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Service handler type",
 						},
-						"payload": {
-							Type:        schema.TypeMap,
+						"cpu_model": {
+							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Group payload data",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
+							Description: "CPU model",
+						},
+						"cpu_frequency": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "CPU frequency",
+						},
+						"network_speed": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Network speed",
+						},
+						"ipv4_count": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Number of IPv4 addresses",
+						},
+						"ipv6_subnet": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "IPv6 subnet",
 						},
 					},
 				},
@@ -75,52 +112,40 @@ func ServiceGroupsData() *schema.Resource {
 func serviceGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(interfaces.DataClient)
 
-	serviceType := d.Get("service_type").(string)
-
-	groups, err := client.GetServiceGroups(ctx, serviceType)
-	if err != nil {
-		return diag.FromErr(err)
+	serviceType := ""
+	if serviceTypeVal, ok := d.Get("service_type").(string); ok {
+		serviceType = serviceTypeVal
 	}
 
-	groupList := make([]map[string]interface{}, len(groups.Items))
-	for i, group := range groups.Items {
-		description := ""
-		if group.Description != nil {
-			description = *group.Description
-		}
+	groups, err := client.ListServiceGroups(ctx, serviceType)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("unable to read service groups: %w", err))
+	}
 
-		// Конвертируем payload в map[string]string для Terraform
-		payloadMap := make(map[string]string)
-		for key, value := range group.Payload {
-			switch v := value.(type) {
-			case string:
-				payloadMap[key] = v
-			case bool:
-				payloadMap[key] = fmt.Sprintf("%t", v)
-			case float64:
-				payloadMap[key] = fmt.Sprintf("%.0f", v)
-			case int:
-				payloadMap[key] = fmt.Sprintf("%d", v)
-			default:
-				// Пропускаем сложные типы
-				continue
-			}
-		}
-
+	groupList := make([]map[string]interface{}, len(groups))
+	for i, group := range groups {
 		groupList[i] = map[string]interface{}{
 			"id":              group.ID,
 			"name":            group.Name,
-			"type_slug":       group.Type.Slug,
-			"type_name":       group.Type.Name,
-			"description":     description,
-			"service_handler": group.Type.ServiceHandler,
-			"payload":         payloadMap,
+			"type":            group.Type,
+			"location":        group.Location,
+			"country_code":    group.CountryCode,
+			"server_type":     group.ServerType,
+			"is_disabled":     group.IsDisabled,
+			"description":     group.Description,
+			"features":        group.Features,
+			"service_handler": group.ServiceHandler,
+			"cpu_model":       group.CPUModel,
+			"cpu_frequency":   group.CPUFrequency,
+			"network_speed":   group.NetworkSpeed,
+			"ipv4_count":      group.IPv4Count,
+			"ipv6_subnet":     group.IPv6Subnet,
 		}
 	}
 
 	d.SetId("service_groups")
 	if err := d.Set("groups", groupList); err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("unable to set groups in state: %w", err))
 	}
 
 	return nil

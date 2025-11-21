@@ -9,3 +9,8 @@ type ListServicesResponse struct {
 type ComputedParametersResponse struct {
 	Data ComputedParametersVPS `json:"data"`
 }
+
+type ServiceGroupsResponse struct {
+	Items []ServiceGroup `json:"items"`
+	Total int            `json:"total"`
+}

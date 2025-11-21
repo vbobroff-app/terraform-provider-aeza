@@ -12,7 +12,7 @@ type DataClient interface {
 	ListServices(ctx context.Context) ([]models.TerraformService, error)
 	ListProducts(ctx context.Context) ([]models.Product, error)
 	ListServiceTypes(ctx context.Context) ([]models.ServiceType, error)
-	GetServiceGroups(ctx context.Context, serviceType string) (*models.ProductGroupsResponse, error)
+	ListServiceGroups(ctx context.Context, serviceType string) ([]models.ServiceGroup, error)
 }
 
 // ResourceClient интерфейс для resources

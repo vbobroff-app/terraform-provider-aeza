@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/utils"
 )
 
 type Client struct {
@@ -99,20 +100,14 @@ func (r *Request) SetQueryParams(params map[string]string) *Request {
 	return r
 }
 
-// GetProductGroups возвращает все группы продуктов
-// GetServiceGroups получает список групп услуг с опциональным выбором по типу
-func (c *Client) GetServiceGroups(ctx context.Context, serviceType string) (*models.ProductGroupsResponse, error) {
-	var response models.ProductGroupsResponse
-
-	req := c.NewRequest("GET", "/v2/services/groups", nil)
-	if serviceType != "" {
-		req.AddQueryParam("type", serviceType)
-	}
-
-	err := req.Do(ctx, &response)
+// ListServiceGroups получает список групп услуг (основной метод)
+func (c *Client) ListServiceGroups(ctx context.Context, serviceType string) ([]models.ServiceGroup, error) {
+	// Используем API v2
+	nextGroups, err := c.ListServiceGroups_V2(ctx, serviceType)
 	if err != nil {
 		return nil, err
 	}
 
-	return &response, nil
+	// Конвертируем в Terraform модели
+	return utils.ConvertNextServiceGroups(nextGroups), nil
 }

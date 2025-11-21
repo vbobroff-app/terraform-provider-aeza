@@ -17,3 +17,20 @@ func (c *Client) ListServices_V2(ctx context.Context) ([]next.Service, error) {
 
 	return response.Items, nil
 }
+
+// ListServiceGroups_V2 получает список групп услуг через API v2
+func (c *Client) ListServiceGroups_V2(ctx context.Context, serviceType string) ([]next.ServiceGroup, error) {
+	var response next.ServiceGroupsResponse
+
+	req := c.NewRequest("GET", "/v2/services/groups", nil)
+	if serviceType != "" {
+		req.AddQueryParam("type", serviceType)
+	}
+
+	err := req.Do(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Items, nil
+}
