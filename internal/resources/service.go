@@ -119,8 +119,6 @@ func serviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	d.Set("auto_prolong", service.AutoProlong)
 	d.Set("status", service.Status)
 	d.Set("ip", service.IP)
-	d.Set("created_at", service.CreatedAt)
-	d.Set("updated_at", service.UpdatedAt)
 
 	return nil
 }

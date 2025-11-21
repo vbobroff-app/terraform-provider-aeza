@@ -1,3 +1,4 @@
+// internal/data-sources/service_groups.go
 package data_sources
 
 import (
@@ -6,8 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/client"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/interfaces"
 )
 
 func ServiceGroupsData() *schema.Resource {
@@ -73,7 +73,7 @@ func ServiceGroupsData() *schema.Resource {
 }
 
 func serviceGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*client.Client)
+	client := meta.(interfaces.DataClient)
 
 	serviceType := d.Get("service_type").(string)
 

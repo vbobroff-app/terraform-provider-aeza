@@ -1,4 +1,4 @@
-// internal/client/client
+// internal/client/client.go
 package client
 
 import (
@@ -23,15 +23,15 @@ func NewClient(baseUrl, apiKey string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) ListServices(ctx context.Context) ([]models.Service, error) {
-	var response models.ListServicesResponse
-	err := c.NewRequest("GET", "/services", nil).Do(ctx, &response)
-	if err != nil {
-		return nil, err
-	}
+// func (c *Client) ListServices(ctx context.Context) ([]models.Service, error) {
+// 	var response models.ListServicesResponse
+// 	err := c.NewRequest("GET", "/services", nil).Do(ctx, &response)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return response.Data.Items, nil
-}
+// 	return response.Data.Items, nil
+// }
 
 func (c *Client) ListProducts(ctx context.Context) ([]models.Product, error) {
 	var response models.ListProductsResponse
@@ -42,16 +42,15 @@ func (c *Client) ListProducts(ctx context.Context) ([]models.Product, error) {
 	return response.Data.Items, nil // Теперь берем из Data.Items
 }
 
-func (c *Client) ListServiceTypes(ctx context.Context) ([]models.ServiceType, error) {
-	var response models.ListServiceTypesResponse
-	err := c.NewRequest("GET", "/services/types", nil).Do(ctx, &response)
-	if err != nil {
-		return nil, err
-	}
-	return response.Data.Items, nil // Теперь берем из Data.Items
-}
-
 // Resource methods
+// CreateService creates a new service in Aeza
+// Parameters:
+//   - ctx: context for cancellation and timeouts
+//   - req: service creation request with name, product_id, etc.
+//
+// Returns:
+//   - *ServiceCreateResponse: created service details
+//   - error: any error that occurred during creation
 func (c *Client) CreateService(ctx context.Context, req models.ServiceCreateRequest) (*models.ServiceCreateResponse, error) {
 	var response models.ServiceCreateResponse
 

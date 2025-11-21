@@ -9,9 +9,10 @@ import (
 
 // DataClient интерфейс для data sources
 type DataClient interface {
-	ListServices(ctx context.Context) ([]models.Service, error)
+	ListServices(ctx context.Context) ([]models.TerraformService, error)
 	ListProducts(ctx context.Context) ([]models.Product, error)
 	ListServiceTypes(ctx context.Context) ([]models.ServiceType, error)
+	GetServiceGroups(ctx context.Context, serviceType string) (*models.ProductGroupsResponse, error)
 }
 
 // ResourceClient интерфейс для resources
