@@ -10,23 +10,39 @@ import (
 
 // ConvertNextServiceGroup преобразует группу услуг из API v2 в Terraform ServiceGroup
 func ConvertNextServiceGroup(apiGroup next.ServiceGroup) models.ServiceGroup {
-	return models.ServiceGroup{
+	groupType := getDetailedGroupType(apiGroup)
+	serverType := getStringFromPayload(apiGroup.Payload, "mode")
+
+	// Для серверных групп уточняем server_type
+	if groupType == "server" && serverType == "" {
+		serverType = getServerSubtype(apiGroup)
+	}
+
+	group := models.ServiceGroup{
 		ID:             apiGroup.ID,
 		Name:           apiGroup.Name,
 		Type:           apiGroup.Type.Slug,
+		GroupType:      groupType,
 		ServiceHandler: apiGroup.Type.ServiceHandler,
 		Description:    apiGroup.Description,
 		Location:       getStringFromPayload(apiGroup.Payload, "label"),
 		CountryCode:    getStringFromPayload(apiGroup.Payload, "code"),
-		ServerType:     getStringFromPayload(apiGroup.Payload, "mode"),
+		ServerType:     serverType,
 		IsDisabled:     getBoolFromPayload(apiGroup.Payload, "isDisabled"),
 		Features:       getFeatures(apiGroup.LocaledPayload),
-		CPUModel:       getCPUModel(apiGroup.LocaledPayload),
-		CPUFrequency:   getCPUFrequency(apiGroup.LocaledPayload),
-		NetworkSpeed:   getNetworkSpeed(apiGroup.LocaledPayload),
-		IPv4Count:      getIPv4Count(apiGroup.LocaledPayload),
-		IPv6Subnet:     getIPv6Subnet(apiGroup.LocaledPayload),
 	}
+
+	// Заполняем дополнительные поля только для серверных групп
+	if groupType == "server" {
+		features := getFeatures(apiGroup.LocaledPayload)
+		group.CPUModel = extractCPUModel(features)
+		group.CPUFrequency = extractCPUFrequency(features)
+		group.NetworkSpeed = extractNetworkSpeed(features)
+		group.IPv4Count = extractIPv4Count(features)
+		group.IPv6Subnet = extractIPv6Subnet(features)
+	}
+
+	return group
 }
 
 // Универсальная функция для извлечения features
@@ -79,31 +95,6 @@ func getBoolFromPayload(payload map[string]interface{}, key string) bool {
 		}
 	}
 	return false
-}
-
-func getCPUModel(localed map[string]interface{}) string {
-	features := getFeatures(localed)
-	return extractCPUModel(features)
-}
-
-func getCPUFrequency(localed map[string]interface{}) string {
-	features := getFeatures(localed)
-	return extractCPUFrequency(features)
-}
-
-func getNetworkSpeed(localed map[string]interface{}) string {
-	features := getFeatures(localed)
-	return extractNetworkSpeed(features)
-}
-
-func getIPv4Count(localed map[string]interface{}) int {
-	features := getFeatures(localed)
-	return extractIPv4Count(features)
-}
-
-func getIPv6Subnet(localed map[string]interface{}) string {
-	features := getFeatures(localed)
-	return extractIPv6Subnet(features)
 }
 
 // Функции парсинга (оставляем без изменений)
@@ -181,4 +172,83 @@ func ConvertNextServiceGroups(nextGroups []next.ServiceGroup) []models.ServiceGr
 		result[i] = ConvertNextServiceGroup(apiGroup)
 	}
 	return result
+}
+
+// Определяем детальный тип группы
+func getDetailedGroupType(apiGroup next.ServiceGroup) string {
+	mode := getStringFromPayload(apiGroup.Payload, "mode")
+	code := getStringFromPayload(apiGroup.Payload, "code")
+
+	// 1. Location - есть code, но НЕТ mode (чистые локации)
+	if code != "" && mode == "" {
+		return "location"
+	}
+
+	// 2. Server groups с географической привязкой
+	if mode != "" && hasGeography(apiGroup) {
+		return "geography"
+	}
+
+	// 3. Server groups без географической привязки
+	if mode != "" {
+		return "server"
+	}
+
+	// 4. Special services
+	if isSpecialService(apiGroup.Type.Slug) {
+		return "special"
+	}
+
+	return "unknown"
+}
+
+func isSpecialService(slug string) bool {
+	specialServices := []string{"waf", "vpn", "s3", "soft"}
+	for _, service := range specialServices {
+		if slug == service {
+			return true
+		}
+	}
+	return false
+}
+
+func hasGeography(apiGroup next.ServiceGroup) bool {
+	code := getStringFromPayload(apiGroup.Payload, "code")
+	mgr := getStringFromPayload(apiGroup.Payload, "mgr")
+	label := getStringFromPayload(apiGroup.Payload, "label")
+
+	return code != "" || mgr != "" || hasCountryPrefix(label)
+}
+
+func hasCountryPrefix(label string) bool {
+	countryPrefixes := []string{"US-", "DE-", "RU-", "NL-", "FI-", "AT-", "SE-", "FR-", "GB-", "TR-", "HK-", "BG-", "KZ-"}
+	for _, prefix := range countryPrefixes {
+		if strings.HasPrefix(label, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
+// Дополнительная функция для определения подтипа серверной группы
+func getServerSubtype(apiGroup next.ServiceGroup) string {
+	mode := getStringFromPayload(apiGroup.Payload, "mode")
+	label := getStringFromPayload(apiGroup.Payload, "label")
+
+	if mode == "shared" {
+		return "shared"
+	}
+	if mode == "dedicated" {
+		return "dedicated"
+	}
+
+	// Определяем по label если mode нет
+	if strings.Contains(label, "SHARED") {
+		return "shared"
+	}
+	if strings.Contains(label, "DEDICATED") {
+		return "dedicated"
+	}
+
+	return "server"
 }

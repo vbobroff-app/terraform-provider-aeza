@@ -36,6 +36,7 @@ package models
 
 type ServiceGroup struct {
 	ID             int64  `json:"id" tfsdk:"id"`
+	GroupType      string `json:"group_type" tfsdk:"group_type"` // тип группы: server, location, geography
 	Name           string `json:"name" tfsdk:"name"`
 	Type           string `json:"type" tfsdk:"type"`
 	Location       string `json:"location" tfsdk:"location"`

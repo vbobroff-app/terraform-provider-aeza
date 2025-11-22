@@ -32,6 +32,11 @@ func ServiceGroupsData() *schema.Resource {
 							Computed:    true,
 							Description: "Group ID",
 						},
+						"group_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of group: server, location, geography",
+						},
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -72,21 +77,6 @@ func ServiceGroupsData() *schema.Resource {
 							Computed:    true,
 							Description: "Localized features description",
 						},
-						"service_handler": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Service handler type",
-						},
-						"cpu_model": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "CPU model",
-						},
-						"cpu_frequency": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "CPU frequency",
-						},
 						"network_speed": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -101,6 +91,21 @@ func ServiceGroupsData() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "IPv6 subnet",
+						},
+						"cpu_model": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "CPU model",
+						},
+						"cpu_frequency": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "CPU frequency",
+						},
+						"service_handler": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Service handler type",
 						},
 					},
 				},
@@ -126,6 +131,7 @@ func serviceGroupsRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	for i, group := range groups {
 		groupList[i] = map[string]interface{}{
 			"id":              group.ID,
+			"group_type":      group.GroupType,
 			"name":            group.Name,
 			"type":            group.Type,
 			"location":        group.Location,
@@ -134,12 +140,12 @@ func serviceGroupsRead(ctx context.Context, d *schema.ResourceData, meta interfa
 			"is_disabled":     group.IsDisabled,
 			"description":     group.Description,
 			"features":        group.Features,
-			"service_handler": group.ServiceHandler,
-			"cpu_model":       group.CPUModel,
-			"cpu_frequency":   group.CPUFrequency,
 			"network_speed":   group.NetworkSpeed,
 			"ipv4_count":      group.IPv4Count,
 			"ipv6_subnet":     group.IPv6Subnet,
+			"cpu_model":       group.CPUModel,
+			"cpu_frequency":   group.CPUFrequency,
+			"service_handler": group.ServiceHandler,
 		}
 	}
 
