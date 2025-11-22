@@ -50,3 +50,22 @@ func (c *Client) ListServiceTypes_legacy(ctx context.Context) ([]legacy.ServiceT
 	}
 	return response.Data.Items, nil // Теперь берем из Data.Items
 }
+
+// ListServiceGroups_Legacy получает список групп услуг через Legacy API
+func (c *Client) ListServiceGroups_Legacy(ctx context.Context, serviceType string) ([]legacy.ServiceGroup, error) {
+	var response legacy.ServiceGroupsResponse
+
+	req := c.NewRequest("GET", "/services/groups", nil)
+	req.AddQueryParam("extra", "true")
+
+	if serviceType != "" {
+		req.AddQueryParam("type", serviceType)
+	}
+
+	err := req.Do(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Data.Items, nil
+}

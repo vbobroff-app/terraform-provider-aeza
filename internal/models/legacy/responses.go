@@ -29,3 +29,10 @@ type ListServiceTypesResponse struct {
 		Total int           `json:"total"`
 	} `json:"data"`
 }
+
+type ServiceGroupsResponse struct {
+	Data struct {
+		Items []ServiceGroup `json:"items"`
+		Total int            `json:"total"`
+	} `json:"data"`
+}

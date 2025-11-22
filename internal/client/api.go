@@ -40,3 +40,23 @@ func (c *Client) ListServiceTypes(ctx context.Context) ([]models.ServiceType, er
 
 	return result, nil
 }
+
+// ListServiceGroups получает список групп услуг (основной метод)
+func (c *Client) ListServiceGroups(ctx context.Context, serviceType string) ([]models.ServiceGroup, error) {
+	// Пробуем сначала Legacy API
+	legacyGroups, err := c.ListServiceGroups_Legacy(ctx, serviceType)
+	if err == nil && len(legacyGroups) > 0 {
+		return utils.ConvertLegacyServiceGroups(legacyGroups), nil
+	}
+
+	return nil, err
+
+	// // Fallback на API v2
+	// nextGroups, err := c.ListServiceGroups_V2(ctx, serviceType)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// // Конвертируем в Terraform модели
+	// return utils.ConvertNextServiceGroups(nextGroups), nil
+}

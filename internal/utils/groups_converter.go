@@ -1,40 +1,40 @@
-// internal/utils/service_converter.go
+// internal/utils/legacy_converter.go
 package utils
 
 import (
 	"strings"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/next"
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
 )
 
-// ConvertNextServiceGroup преобразует группу услуг из API v2 в Terraform ServiceGroup
-func ConvertNextServiceGroup(apiGroup next.ServiceGroup) models.ServiceGroup {
-	groupType := getDetailedGroupType(apiGroup)
-	serverType := getStringFromPayload(apiGroup.Payload, "mode")
+// ConvertLegacyServiceGroup преобразует группу услуг из legacy API в Terraform ServiceGroup
+func ConvertLegacyServiceGroup(legacyGroup legacy.ServiceGroup) models.ServiceGroup {
+	groupType := getLegacyGroupType(legacyGroup)
+	serverType := getStringFromPayload(legacyGroup.Payload, "mode")
 
 	// Для серверных групп уточняем server_type
 	if groupType == "server" && serverType == "" {
-		serverType = getServerSubtype(apiGroup)
+		serverType = getLegacyServerSubtype(legacyGroup)
 	}
 
 	group := models.ServiceGroup{
-		ID:             apiGroup.ID,
-		Name:           apiGroup.Name,
-		Type:           apiGroup.Type.Slug,
+		ID:             legacyGroup.ID,
+		Name:           legacyGroup.Name,
+		Type:           legacyGroup.TypeObject.Slug,
 		GroupType:      groupType,
-		ServiceHandler: apiGroup.Type.ServiceHandler,
-		Description:    apiGroup.Description,
-		Location:       getStringFromPayload(apiGroup.Payload, "label"),
-		CountryCode:    getStringFromPayload(apiGroup.Payload, "code"),
+		ServiceHandler: legacyGroup.ServiceHandler,
+		Description:    legacyGroup.Description,
+		Location:       getStringFromPayload(legacyGroup.Payload, "label"),
+		CountryCode:    getStringFromPayload(legacyGroup.Payload, "code"),
 		ServerType:     serverType,
-		IsDisabled:     getBoolFromPayload(apiGroup.Payload, "isDisabled"),
-		Features:       getFeatures(apiGroup.LocaledPayload),
+		IsDisabled:     getLegacyBoolFromPayload(legacyGroup.Payload, "isDisabled"),
+		Features:       getLegacyFeatures(legacyGroup.LocaledPayload),
 	}
 
 	// Заполняем дополнительные поля только для серверных групп
 	if groupType == "server" {
-		features := getFeatures(apiGroup.LocaledPayload)
+		features := getLegacyFeatures(legacyGroup.LocaledPayload)
 		group.CPUModel = extractCPUModel(features)
 		group.CPUFrequency = extractCPUFrequency(features)
 		group.NetworkSpeed = extractNetworkSpeed(features)
@@ -45,13 +45,53 @@ func ConvertNextServiceGroup(apiGroup next.ServiceGroup) models.ServiceGroup {
 	return group
 }
 
-// Универсальная функция для извлечения features
-func getFeatures(localed map[string]interface{}) string {
+// Определяем тип группы для legacy API
+func getLegacyGroupType(legacyGroup legacy.ServiceGroup) string {
+	mode := getStringFromPayload(legacyGroup.Payload, "mode")
+	code := getStringFromPayload(legacyGroup.Payload, "code")
+	role := getLegacyRole(legacyGroup.Role)
+
+	// 1. Location - есть code (чистые локации)
+	if code != "" {
+		return "location"
+	}
+
+	// 2. Server groups - есть mode
+	if mode != "" {
+		return "server"
+	}
+
+	// 3. Special services
+	if isSpecialService(legacyGroup.TypeObject.Slug) {
+		return "special"
+	}
+
+	// 4. География (если есть role но нет code)
+	if role == "location" {
+		return "geography"
+	}
+
+	return "unknown"
+}
+
+// Получаем role из interface{}
+func getLegacyRole(role interface{}) string {
+	if role == nil {
+		return ""
+	}
+	if str, ok := role.(string); ok {
+		return str
+	}
+	return ""
+}
+
+// Универсальная функция для извлечения features из legacy API
+func getLegacyFeatures(localed map[string]interface{}) string {
 	if localed == nil {
 		return ""
 	}
 
-	// Пробуем разные форматы features
+	// Пробуем разные форматы features в legacy API
 
 	// Формат 1: features как map[string]interface{}
 	if features, exists := localed["features"]; exists {
@@ -75,165 +115,24 @@ func getFeatures(localed map[string]interface{}) string {
 		}
 	}
 
+	// Формат 3: prettyLocaledPayload.features
+	if pretty, exists := localed["prettyLocaledPayload"]; exists {
+		if prettyMap, ok := pretty.(map[string]interface{}); ok {
+			if features, exists := prettyMap["features"]; exists {
+				if str, ok := features.(string); ok {
+					return str
+				}
+			}
+		}
+	}
+
 	return ""
 }
 
-// Остальные вспомогательные функции
-func getStringFromPayload(payload map[string]interface{}, key string) string {
-	if val, exists := payload[key]; exists {
-		if str, ok := val.(string); ok {
-			return str
-		}
-	}
-	return ""
-}
-
-func getBoolFromPayload(payload map[string]interface{}, key string) bool {
-	if val, exists := payload[key]; exists {
-		if b, ok := val.(bool); ok {
-			return b
-		}
-	}
-	return false
-}
-
-// Функции парсинга (оставляем без изменений)
-func extractCPUModel(features string) string {
-	lines := strings.Split(features, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if strings.Contains(line, "Процессор") {
-			return strings.TrimPrefix(line, "Процессор ")
-		}
-		if strings.Contains(line, "Processor") {
-			return strings.TrimPrefix(line, "Processor ")
-		}
-	}
-	return ""
-}
-
-func extractCPUFrequency(features string) string {
-	lines := strings.Split(features, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if strings.Contains(line, "Частота") {
-			return strings.TrimPrefix(line, "Частота ")
-		}
-		if strings.Contains(line, "Frequency") {
-			return strings.TrimPrefix(line, "Frequency ")
-		}
-	}
-	return ""
-}
-
-func extractNetworkSpeed(features string) string {
-	lines := strings.Split(features, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if strings.Contains(line, "Интернет до") {
-			return strings.TrimPrefix(line, "Интернет до ")
-		}
-		if strings.Contains(line, "Internet up to") {
-			return strings.TrimPrefix(line, "Internet up to ")
-		}
-	}
-	return ""
-}
-
-func extractIPv4Count(features string) int {
-	lines := strings.Split(features, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if strings.Contains(line, "1 адрес IPv4") || strings.Contains(line, "1 IPv4 address") {
-			return 1
-		}
-	}
-	return 0
-}
-
-func extractIPv6Subnet(features string) string {
-	lines := strings.Split(features, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if strings.Contains(line, "/48") {
-			return "/48"
-		}
-		if strings.Contains(line, "/64") {
-			return "/64"
-		}
-	}
-	return ""
-}
-
-// ConvertNextServiceGroups преобразует массив групп услуг из API v2 в Terraform ServiceGroup
-func ConvertNextServiceGroups(nextGroups []next.ServiceGroup) []models.ServiceGroup {
-	result := make([]models.ServiceGroup, len(nextGroups))
-	for i, apiGroup := range nextGroups {
-		result[i] = ConvertNextServiceGroup(apiGroup)
-	}
-	return result
-}
-
-// Определяем детальный тип группы
-func getDetailedGroupType(apiGroup next.ServiceGroup) string {
-	mode := getStringFromPayload(apiGroup.Payload, "mode")
-	code := getStringFromPayload(apiGroup.Payload, "code")
-
-	// 1. Location - есть code, но НЕТ mode (чистые локации)
-	if code != "" && mode == "" {
-		return "location"
-	}
-
-	// 2. Server groups с географической привязкой
-	if mode != "" && hasGeography(apiGroup) {
-		return "geography"
-	}
-
-	// 3. Server groups без географической привязки
-	if mode != "" {
-		return "server"
-	}
-
-	// 4. Special services
-	if isSpecialService(apiGroup.Type.Slug) {
-		return "special"
-	}
-
-	return "unknown"
-}
-
-func isSpecialService(slug string) bool {
-	specialServices := []string{"waf", "vpn", "s3", "soft"}
-	for _, service := range specialServices {
-		if slug == service {
-			return true
-		}
-	}
-	return false
-}
-
-func hasGeography(apiGroup next.ServiceGroup) bool {
-	code := getStringFromPayload(apiGroup.Payload, "code")
-	mgr := getStringFromPayload(apiGroup.Payload, "mgr")
-	label := getStringFromPayload(apiGroup.Payload, "label")
-
-	return code != "" || mgr != "" || hasCountryPrefix(label)
-}
-
-func hasCountryPrefix(label string) bool {
-	countryPrefixes := []string{"US-", "DE-", "RU-", "NL-", "FI-", "AT-", "SE-", "FR-", "GB-", "TR-", "HK-", "BG-", "KZ-"}
-	for _, prefix := range countryPrefixes {
-		if strings.HasPrefix(label, prefix) {
-			return true
-		}
-	}
-	return false
-}
-
-// Дополнительная функция для определения подтипа серверной группы
-func getServerSubtype(apiGroup next.ServiceGroup) string {
-	mode := getStringFromPayload(apiGroup.Payload, "mode")
-	label := getStringFromPayload(apiGroup.Payload, "label")
+// Дополнительная функция для определения подтипа серверной группы в legacy
+func getLegacyServerSubtype(legacyGroup legacy.ServiceGroup) string {
+	mode := getStringFromPayload(legacyGroup.Payload, "mode")
+	label := getStringFromPayload(legacyGroup.Payload, "label")
 
 	if mode == "shared" {
 		return "shared"
@@ -251,4 +150,27 @@ func getServerSubtype(apiGroup next.ServiceGroup) string {
 	}
 
 	return "server"
+}
+
+// Функция для получения bool из payload в legacy API
+func getLegacyBoolFromPayload(payload map[string]interface{}, key string) bool {
+	if val, exists := payload[key]; exists {
+		switch v := val.(type) {
+		case bool:
+			return v
+		case string:
+			// В legacy API иногда bool может быть строкой
+			return v == "true" || v == "1"
+		}
+	}
+	return false
+}
+
+// ConvertLegacyServiceGroups преобразует массив групп услуг из legacy API в Terraform ServiceGroup
+func ConvertLegacyServiceGroups(legacyGroups []legacy.ServiceGroup) []models.ServiceGroup {
+	result := make([]models.ServiceGroup, len(legacyGroups))
+	for i, legacyGroup := range legacyGroups {
+		result[i] = ConvertLegacyServiceGroup(legacyGroup)
+	}
+	return result
 }

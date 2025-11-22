@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/utils"
 )
 
 type Client struct {
@@ -55,18 +54,10 @@ func (c *Client) ListProducts(ctx context.Context) ([]models.Product, error) {
 func (c *Client) CreateService(ctx context.Context, req models.ServiceCreateRequest) (*models.ServiceCreateResponse, error) {
 	var response models.ServiceCreateResponse
 
-	// Добавляем логирование запроса
-	fmt.Printf("DEBUG: API CreateService request: %+v\n", req)
-
-	// ... существующий код ...
-
 	err := c.NewRequest("POST", "/services", req).Do(ctx, &response)
 	if err != nil {
 		return nil, err
 	}
-
-	// Добавляем логирование ответа
-	fmt.Printf("DEBUG: API CreateService response: %+v\n", response)
 
 	return &response, nil
 }
@@ -98,16 +89,4 @@ func (r *Request) SetQueryParams(params map[string]string) *Request {
 		r.queryParams[key] = value
 	}
 	return r
-}
-
-// ListServiceGroups получает список групп услуг (основной метод)
-func (c *Client) ListServiceGroups(ctx context.Context, serviceType string) ([]models.ServiceGroup, error) {
-	// Используем API v2
-	nextGroups, err := c.ListServiceGroups_V2(ctx, serviceType)
-	if err != nil {
-		return nil, err
-	}
-
-	// Конвертируем в Terraform модели
-	return utils.ConvertNextServiceGroups(nextGroups), nil
 }
