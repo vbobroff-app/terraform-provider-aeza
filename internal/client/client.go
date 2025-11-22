@@ -23,25 +23,6 @@ func NewClient(baseUrl, apiKey string) (*Client, error) {
 	}, nil
 }
 
-// func (c *Client) ListServices(ctx context.Context) ([]models.Service, error) {
-// 	var response models.ListServicesResponse
-// 	err := c.NewRequest("GET", "/services", nil).Do(ctx, &response)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return response.Data.Items, nil
-// }
-
-func (c *Client) ListProducts(ctx context.Context) ([]models.Product, error) {
-	var response models.ListProductsResponse
-	err := c.NewRequest("GET", "/services/products", nil).Do(ctx, &response)
-	if err != nil {
-		return nil, err
-	}
-	return response.Data.Items, nil // Теперь берем из Data.Items
-}
-
 // Resource methods
 // CreateService creates a new service in Aeza
 // Parameters:

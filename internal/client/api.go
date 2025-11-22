@@ -43,20 +43,33 @@ func (c *Client) ListServiceTypes(ctx context.Context) ([]models.ServiceType, er
 
 // ListServiceGroups получает список групп услуг (основной метод)
 func (c *Client) ListServiceGroups(ctx context.Context, serviceType string) ([]models.ServiceGroup, error) {
-	// Пробуем сначала Legacy API
+	// Приоритет Legacy API
 	legacyGroups, err := c.ListServiceGroups_Legacy(ctx, serviceType)
 	if err == nil && len(legacyGroups) > 0 {
 		return utils.ConvertLegacyServiceGroups(legacyGroups), nil
 	}
 
-	return nil, err
+	// Fallback на API v2
+	nextGroups, err := c.ListServiceGroups_V2(ctx, serviceType)
+	if err != nil {
+		return nil, err
+	}
 
-	// // Fallback на API v2
-	// nextGroups, err := c.ListServiceGroups_V2(ctx, serviceType)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	// Конвертируем в Terraform модели
+	return utils.ConvertNextServiceGroups(nextGroups), nil
+}
 
-	// // Конвертируем в Terraform модели
-	// return utils.ConvertNextServiceGroups(nextGroups), nil
+func (c *Client) ListProducts(ctx context.Context) ([]models.Product, error) {
+	legacyProducts, err := c.ListProducts_Legacy(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Конвертируем legacy.Product в models.Product
+	var result []models.Product
+	for _, legacyProduct := range legacyProducts {
+		result = append(result, utils.ConvertLegacyProduct(legacyProduct))
+	}
+
+	return result, nil
 }

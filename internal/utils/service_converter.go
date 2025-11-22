@@ -93,16 +93,54 @@ func calculatePriceFromLegacy(legacyService legacy.ServiceVPS) int {
 	}
 
 	// Приоритет 4: rawPrices продукта
-	if legacyService.Product.RawPrices != nil {
-		if price, exists := legacyService.Product.RawPrices[legacyService.PaymentTerm]; exists {
-			return price
+	if legacyService.Product.RawPrices != (legacy.ProductPrices{}) {
+		switch legacyService.PaymentTerm {
+		case "hour":
+			if legacyService.Product.RawPrices.Hour > 0 {
+				return legacyService.Product.RawPrices.Hour
+			}
+		case "month":
+			if legacyService.Product.RawPrices.Month > 0 {
+				return legacyService.Product.RawPrices.Month
+			}
+		case "year":
+			if legacyService.Product.RawPrices.Year > 0 {
+				return legacyService.Product.RawPrices.Year
+			}
+		case "half_year":
+			if legacyService.Product.RawPrices.HalfYear > 0 {
+				return legacyService.Product.RawPrices.HalfYear
+			}
+		case "quarter_year":
+			if legacyService.Product.RawPrices.QuarterYear > 0 {
+				return legacyService.Product.RawPrices.QuarterYear
+			}
 		}
 	}
 
 	// Приоритет 5: individualPrices продукта
-	if legacyService.Product.IndividualPrices != nil {
-		if price, exists := legacyService.Product.IndividualPrices[legacyService.PaymentTerm]; exists {
-			return price
+	if legacyService.Product.IndividualPrices != (legacy.ProductPrices{}) {
+		switch legacyService.PaymentTerm {
+		case "hour":
+			if legacyService.Product.IndividualPrices.Hour > 0 {
+				return legacyService.Product.IndividualPrices.Hour
+			}
+		case "month":
+			if legacyService.Product.IndividualPrices.Month > 0 {
+				return legacyService.Product.IndividualPrices.Month
+			}
+		case "year":
+			if legacyService.Product.IndividualPrices.Year > 0 {
+				return legacyService.Product.IndividualPrices.Year
+			}
+		case "half_year":
+			if legacyService.Product.IndividualPrices.HalfYear > 0 {
+				return legacyService.Product.IndividualPrices.HalfYear
+			}
+		case "quarter_year":
+			if legacyService.Product.IndividualPrices.QuarterYear > 0 {
+				return legacyService.Product.IndividualPrices.QuarterYear
+			}
 		}
 	}
 
@@ -303,15 +341,6 @@ func getOSDisplayName(osSlug string) string {
 		return name
 	}
 	return osSlug
-}
-
-func getStringParam(params map[string]interface{}, key string) string {
-	if val, exists := params[key]; exists {
-		if str, ok := val.(string); ok {
-			return str
-		}
-	}
-	return ""
 }
 
 // Форматирование дат

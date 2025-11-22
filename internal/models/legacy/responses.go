@@ -36,3 +36,11 @@ type ServiceGroupsResponse struct {
 		Total int            `json:"total"`
 	} `json:"data"`
 }
+
+// ListProductsResponse - ответ на запрос списка продуктов
+type ListProductsResponse struct {
+	Data struct {
+		Items []Product `json:"items"`
+		Total int       `json:"total"`
+	} `json:"data"`
+}

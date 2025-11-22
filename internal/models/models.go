@@ -95,14 +95,6 @@ type ServiceType struct {
 	Name    string                 `json:"name"`
 }
 
-// ListProductsResponse - ответ на запрос списка продуктов
-type ListProductsResponse struct {
-	Data struct {
-		Items []Product `json:"items"`
-		Total int       `json:"total"`
-	} `json:"data"`
-}
-
 // ServiceCreateRequest - запрос на создание услуги
 type ServiceCreateRequest struct {
 	Name         string `json:"name"`

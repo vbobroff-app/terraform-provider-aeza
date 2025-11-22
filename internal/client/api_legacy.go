@@ -69,3 +69,12 @@ func (c *Client) ListServiceGroups_Legacy(ctx context.Context, serviceType strin
 
 	return response.Data.Items, nil
 }
+
+func (c *Client) ListProducts_Legacy(ctx context.Context) ([]legacy.Product, error) {
+	var response legacy.ListProductsResponse
+	err := c.NewRequest("GET", "/services/products", nil).Do(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+	return response.Data.Items, nil
+}
