@@ -44,3 +44,9 @@ type ListProductsResponse struct {
 		Total int       `json:"total"`
 	} `json:"data"`
 }
+
+type OSResponse struct {
+	Data struct {
+		Items []OperatingSystem `json:"items"`
+	} `json:"data"`
+}

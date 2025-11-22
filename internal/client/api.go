@@ -73,3 +73,17 @@ func (c *Client) ListProducts(ctx context.Context) ([]models.Product, error) {
 
 	return result, nil
 }
+
+func (c *Client) ListOS(ctx context.Context) ([]models.OperatingSystem, error) {
+	legacyOS, err := c.ListOS_Legacy(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []models.OperatingSystem
+	for _, os := range legacyOS {
+		result = append(result, models.OperatingSystem{OperatingSystem: os})
+	}
+
+	return result, nil
+}

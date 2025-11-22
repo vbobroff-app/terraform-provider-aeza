@@ -78,3 +78,12 @@ func (c *Client) ListProducts_Legacy(ctx context.Context) ([]legacy.Product, err
 	}
 	return response.Data.Items, nil
 }
+
+func (c *Client) ListOS_Legacy(ctx context.Context) ([]legacy.OperatingSystem, error) {
+	var response legacy.OSResponse
+	err := c.NewRequest("GET", "/os", nil).Do(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+	return response.Data.Items, nil
+}

@@ -1,6 +1,8 @@
 // internal/client/models.go
 package models
 
+import "github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
+
 type TerraformService struct {
 	ID           int    `json:"id"`
 	Name         string `json:"name"`
@@ -141,4 +143,8 @@ type Price struct {
 // ServiceGetResponse - ответ на запрос услуги
 type ServiceGetResponse struct {
 	Service Service `json:"service"`
+}
+
+type OperatingSystem struct {
+	legacy.OperatingSystem
 }
