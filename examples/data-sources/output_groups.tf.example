@@ -1,0 +1,108 @@
+output "all_service_groups" {
+  description = "List of all Aeza service groups"
+  value       = data.aeza_service_groups.all.groups
+}
+
+
+
+output "location_groups" {
+  description = "Location groups with only populated fields"
+  value = [
+    for group in data.aeza_service_groups.all.groups :
+    {
+      id              = group.id
+      name            = group.name
+      type            = group.type
+      location        = group.location
+      country_code    = group.country_code
+      service_handler = group.service_handler
+    } if group.group_type == "location"
+  ]
+}
+
+output "service_groups_by_type" {
+  description = "Service groups grouped by service type"
+  value = {
+    for group in data.aeza_service_groups.all.groups :
+    group.type => {
+      id          = group.id
+      name        = group.name
+      location    = group.location
+      server_type = group.server_type
+      country     = group.country_code
+    }...
+  }
+}
+
+output "compute_groups" {
+  description = "Filtered compute services only (excluding locations)"
+  value = [
+    for group in data.aeza_service_groups.all.groups :
+    group if contains(["vps", "vds", "hicpu", "storage", "gpu"], lower(group.type)) && group.group_type != "location"
+  ]
+}
+
+output "dedicated_groups" {
+  description = "Filtered dedicated server groups only"
+  value = [
+    for group in data.aeza_service_groups.all.groups :
+    group if contains(["dedicated", "dedicated-server"], lower(group.type))
+  ]
+}
+
+
+
+output "groups_by_country" {
+  description = "Service groups grouped by country code"
+  value = {
+    for group in data.aeza_service_groups.all.groups :
+    group.country_code => {
+      id       = group.id
+      name     = group.name
+      type     = group.type
+      location = group.location
+      features = group.features
+    }...
+  }
+}
+
+
+output "groups_with_network_info" {
+  description = "Groups with detailed network configuration"
+  value = [
+    for group in data.aeza_service_groups.all.groups :
+    {
+      id           = group.id
+      name         = group.name
+      type         = group.type
+      location     = group.location
+      network_speed = group.network_speed
+      ipv4_count   = group.ipv4_count
+      ipv6_subnet  = group.ipv6_subnet
+      cpu_model    = group.cpu_model
+      cpu_frequency = group.cpu_frequency
+    }
+  ]
+}
+
+output "service_handlers" {
+  description = "Unique service handlers available"
+  value = distinct([
+    for group in data.aeza_service_groups.all.groups :
+    group.service_handler
+  ])
+}
+
+output "server_types" {
+  description = "Groups grouped by server type"
+  value = {
+    for group in data.aeza_service_groups.all.groups :
+    group.server_type => {
+      id       = group.id
+      name     = group.name
+      type     = group.type
+      location = group.location
+      country  = group.country_code
+    }...
+  }
+}

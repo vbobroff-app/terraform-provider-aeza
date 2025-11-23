@@ -1,0 +1,2 @@
+# examples/basic/terrarorm.tfvars
+aeza_api_key = "yourAPIkey"

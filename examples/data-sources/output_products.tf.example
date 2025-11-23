@@ -1,0 +1,38 @@
+output "all_products" {
+  description = "List of all available Aeza products"
+  value       = data.aeza_products.all.products
+}
+
+output "product_names" {
+  description = "Names of all available products"
+  value = [for product in data.aeza_products.all.products : product.name]
+}
+
+output "products_by_type" {
+  description = "Products grouped by type"
+  value = {
+    for product in data.aeza_products.all.products :
+    product.type => product.name...
+  }
+}
+
+output "vps_products" {
+  description = "Filtered list of VPS products"
+  value = [
+    for product in data.aeza_products.all.products :
+    product if contains(["vps", "vds"], lower(product.type))
+  ]
+}
+
+output "products_with_prices" {
+  description = "Products with their pricing information"
+  value = [
+    for product in data.aeza_products.all.products : {
+      id        = product.id
+      name      = product.name
+      type      = product.type
+      prices    = product.prices
+      group_id  = product.group_id
+    }
+  ]
+}
