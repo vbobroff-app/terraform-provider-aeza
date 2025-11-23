@@ -4,18 +4,18 @@ package models
 import "github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
 
 type TerraformService struct {
-	ID           int    `json:"id"`
-	Name         string `json:"name"`
-	IP           string `json:"ip"`
-	Price        int    `json:"price"`
-	PaymentTerm  string `json:"paymentTerm"`
-	AutoProlong  bool   `json:"autoProlong"`
-	CreatedAt    string `json:"createdAt"`    // ISO 8601: "2025-11-20T13:12:12.733Z"
-	ExpiresAt    string `json:"expiresAt"`    // ISO 8601: "2025-11-20T13:12:12.733Z"
-	Status       string `json:"status"`       // "activation_wait", "active", etc.
-	TypeSlug     string `json:"typeSlug"`     // "vps"
-	ProductName  string `json:"productName"`  // "SWE-PROMO"
-	LocationCode string `json:"locationCode"` // "de", "nl", etc.
+	ID           int     `json:"id"`
+	Name         string  `json:"name"`
+	IP           string  `json:"ip"`
+	Price        float64 `json:"price"`
+	PaymentTerm  string  `json:"paymentTerm"`
+	AutoProlong  bool    `json:"autoProlong"`
+	CreatedAt    string  `json:"createdAt"`    // ISO 8601: "2025-11-20T13:12:12.733Z"
+	ExpiresAt    string  `json:"expiresAt"`    // ISO 8601: "2025-11-20T13:12:12.733Z"
+	Status       string  `json:"status"`       // "activation_wait", "active", etc.
+	TypeSlug     string  `json:"typeSlug"`     // "vps"
+	ProductName  string  `json:"productName"`  // "SWE-PROMO"
+	LocationCode string  `json:"locationCode"` // "de", "nl", etc.
 }
 
 // TerraformServiceDetailed - унифицированная структура для Terraform провайдера
@@ -74,16 +74,16 @@ type Product struct {
 }
 
 type ConfigurationItem struct {
-	Max    float64                `json:"max"`  // Меняем int на float64
-	Base   float64                `json:"base"` // Меняем int на float64
+	Max    float64                `json:"max"`
+	Base   float64                `json:"base"`
 	Slug   string                 `json:"slug"`
 	Type   string                 `json:"type"`
 	Prices map[string]interface{} `json:"prices"`
 }
 
 type ConfigurationSummary struct {
-	Max  float64 `json:"max"`  // Меняем int на float64
-	Base float64 `json:"base"` // Меняем int на float64
+	Max  float64 `json:"max"`
+	Base float64 `json:"base"`
 	Slug string  `json:"slug"`
 	Type string  `json:"type"`
 }

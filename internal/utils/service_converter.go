@@ -65,18 +65,18 @@ func ConvertLegacyService(legacyService legacy.ServiceVPS) models.TerraformServi
 }
 
 // calculatePriceFromLegacy вычисляет актуальную цену из Legacy структуры
-func calculatePriceFromLegacy(legacyService legacy.ServiceVPS) int {
+func calculatePriceFromLegacy(legacyService legacy.ServiceVPS) float64 {
 	// Приоритет 1: individualPrices
 	if legacyService.IndividualPrices != nil {
 		if price, exists := legacyService.IndividualPrices[legacyService.PaymentTerm]; exists {
-			return price
+			return float64(price)
 		}
 	}
 
 	// Приоритет 2: rawPrices услуги
 	if legacyService.RawPrices != nil {
 		if price, exists := legacyService.RawPrices[legacyService.PaymentTerm]; exists {
-			return price
+			return float64(price)
 		}
 	}
 
@@ -89,6 +89,10 @@ func calculatePriceFromLegacy(legacyService legacy.ServiceVPS) int {
 			return legacyService.Product.Prices.Month
 		case "year":
 			return legacyService.Product.Prices.Year
+		case "half_year":
+			return legacyService.Product.Prices.HalfYear
+		case "quarter_year":
+			return legacyService.Product.Prices.QuarterYear
 		}
 	}
 

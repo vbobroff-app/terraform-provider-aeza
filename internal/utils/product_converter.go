@@ -22,33 +22,32 @@ func ConvertLegacyProduct(legacyProduct legacy.Product) models.Product {
 	// Prices - конвертируем ProductPrices в map[string]float64
 	product.Prices = make(map[string]float64)
 	if legacyProduct.Prices.Hour > 0 {
-		product.Prices["hour"] = float64(legacyProduct.Prices.Hour)
+		product.Prices["hour"] = legacyProduct.Prices.Hour
 	}
 	if legacyProduct.Prices.Month > 0 {
-		product.Prices["month"] = float64(legacyProduct.Prices.Month)
+		product.Prices["month"] = legacyProduct.Prices.Month
 	}
 	if legacyProduct.Prices.Year > 0 {
-		product.Prices["year"] = float64(legacyProduct.Prices.Year)
+		product.Prices["year"] = legacyProduct.Prices.Year
 	}
 	if legacyProduct.Prices.HalfYear > 0 {
-		product.Prices["half_year"] = float64(legacyProduct.Prices.HalfYear)
+		product.Prices["half_year"] = legacyProduct.Prices.HalfYear
 	}
 	if legacyProduct.Prices.QuarterYear > 0 {
-		product.Prices["quarter_year"] = float64(legacyProduct.Prices.QuarterYear)
+		product.Prices["quarter_year"] = legacyProduct.Prices.QuarterYear
 	}
 
 	// Configuration
 	product.Configuration = make([]models.ConfigurationItem, len(legacyProduct.Configuration))
 	for i, config := range legacyProduct.Configuration {
 		product.Configuration[i] = models.ConfigurationItem{
-			Max:    float64(config.Max),
-			Base:   float64(config.Base),
+			Max:    config.Max,  // убираем float64()
+			Base:   config.Base, // убираем float64()
 			Slug:   config.Slug,
 			Type:   config.Type,
 			Prices: config.Prices,
 		}
 	}
-
 	// SummaryConfiguration
 	product.SummaryConfiguration = make(map[string]models.ConfigurationSummary)
 	for key, summary := range legacyProduct.SummaryConfiguration {

@@ -14,10 +14,10 @@ type Product struct {
 	Prices                 ProductPrices          `json:"prices"`
 	RawPrices              ProductPrices          `json:"rawPrices"`
 	IndividualPrices       ProductPrices          `json:"individualPrices"`
-	InstallPrice           int                    `json:"installPrice"`
+	InstallPrice           float64                `json:"installPrice"` // меняем int на float64
 	FirstPrices            ProductPrices          `json:"firstPrices"`
 	IndividualFirstPrices  ProductPrices          `json:"individualFirstPrices"`
-	IndividualInstallPrice *int                   `json:"individualInstallPrice"`
+	IndividualInstallPrice *float64               `json:"individualInstallPrice"` // меняем *int на *float64
 	SummaryConfiguration   map[string]interface{} `json:"summaryConfiguration"`
 	LocaledPayload         map[string]interface{} `json:"localedPayload"`
 	PrettyLocaledPayload   map[string]interface{} `json:"prettyLocaledPayload"`
@@ -28,19 +28,19 @@ type Product struct {
 
 type ProductConfig struct {
 	Slug   string                 `json:"slug"`
-	Base   int                    `json:"base"`
-	Max    int                    `json:"max"`
+	Base   float64                `json:"base"` // меняем int на float64
+	Max    float64                `json:"max"`  // меняем int на float64
 	Type   string                 `json:"type"`
 	Count  int                    `json:"count"`
 	Prices map[string]interface{} `json:"prices"`
 }
 
 type ProductPrices struct {
-	Hour        int `json:"hour"`
-	Month       int `json:"month"`
-	Year        int `json:"year"`
-	HalfYear    int `json:"half_year"`
-	QuarterYear int `json:"quarter_year"`
+	Hour        float64 `json:"hour"`         // меняем int на float64
+	Month       float64 `json:"month"`        // меняем int на float64
+	Year        float64 `json:"year"`         // меняем int на float64
+	HalfYear    float64 `json:"half_year"`    // меняем int на float64
+	QuarterYear float64 `json:"quarter_year"` // меняем int на float64
 }
 
 type ProductGroup struct {

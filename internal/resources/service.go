@@ -78,16 +78,10 @@ func serviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}
 		AutoProlong:  d.Get("auto_prolong").(bool),
 	}
 
-	// Добавляем отладочный вывод
-	fmt.Printf("DEBUG: Creating service with request: %+v\n", req)
-
 	resp, err := client.CreateService(ctx, req)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating service: %w", err))
 	}
-
-	// ⚠️ ДОБАВЬТЕ ПРОВЕРКУ ОТВЕТА ⚠️
-	fmt.Printf("DEBUG: CreateService response: %+v\n", resp)
 
 	// Проверяем что ID не равен 0 (что указывает на ошибку)
 	if resp.ID == 0 {

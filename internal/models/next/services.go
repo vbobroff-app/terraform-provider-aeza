@@ -6,7 +6,7 @@ type Service struct {
 	Name         string                 `json:"name"`
 	IP           string                 `json:"ip"`
 	Payload      map[string]interface{} `json:"payload"`
-	Price        int                    `json:"price"`
+	Price        float64                `json:"price"`
 	PaymentTerm  string                 `json:"paymentTerm"`
 	AutoProlong  bool                   `json:"autoProlong"`
 	CreatedAt    string                 `json:"createdAt"`    // ISO 8601: "2025-11-20T13:12:12.733Z"

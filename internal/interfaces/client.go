@@ -13,6 +13,7 @@ type DataClient interface {
 	ListProducts(ctx context.Context) ([]models.Product, error)
 	ListServiceTypes(ctx context.Context) ([]models.ServiceType, error)
 	ListServiceGroups(ctx context.Context, serviceType string) ([]models.ServiceGroup, error)
+	ListOS(ctx context.Context) ([]models.OperatingSystem, error)
 }
 
 // ResourceClient интерфейс для resources

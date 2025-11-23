@@ -8,7 +8,7 @@ import (
 )
 
 // FormatPrice форматирует цену в "X,XX EUR"
-func FormatPrice(price int) string {
+func FormatPrice(price float64) string {
 	// Предполагаем, что цена в копейках/центах (494 = 4.94 EUR)
 	euros := float64(price) / 100.0
 	// Заменяем точку на запятую для европейского формата

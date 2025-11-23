@@ -4,7 +4,7 @@ VERSION=0.1.0
 GOOS?=$(shell go env GOOS)
 GOARCH?=$(shell go env GOARCH)
 
-TEST_DIR = test-terraform
+TEST_DIR = examples/data-sources
 PLUGIN_PATH = $(TEST_DIR)/.terraform/plugins/registry.terraform.io/$(YOUR_NAME)/aeza/$(VERSION)/$(GOOS)_$(GOARCH)
 
 .PHONY: build clean test install
