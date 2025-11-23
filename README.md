@@ -54,13 +54,13 @@ cp terraform-provider-aeza ~/.terraform.d/plugins/
 
 `aeza_products` - Получение списка доступных продуктов
 
-`aeza_services` - Получение списка активных [услуг](/doc/services.md)
+`aeza_services` - Получение списка активных [услуг](/docs/services.md)
 
-`aeza_service_groups` - Получение [групп услуг](/doc/groups.md)
+`aeza_service_groups` - Получение [групп услуг](/docs/groups.md)
 
-`aeza_service_types` - Получение доступных типов услуг
+`aeza_service_types` - Получение доступных [типов услуг](/docs/service-types.md) 
 
-[Спецификации здесь](/doc/data-sources.md)
+[Спецификации здесь](/docs/data-sources.md)
 
 ### **Resources**
 В разработке
