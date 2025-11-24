@@ -38,6 +38,9 @@ cp terraform-provider-aeza ~/.terraform.d/plugins/
 ```
 
 ### Настройка провайдера
+
+[Настройка локального провайдера для разработки](/docs/test-init.md)
+
 Провайдер требует аутентификацию через API токен (apiKey)
 
 
@@ -52,15 +55,15 @@ cp terraform-provider-aeza ~/.terraform.d/plugins/
 
 ### **Data Sources** 
 
-`aeza_products` - Получение списка доступных продуктов
+[`aeza_products`](/docs/Data-sources/aeza_products.md) - Получение списка доступных продуктов
 
 `aeza_services` - Получение списка активных [услуг](/docs/services.md)
 
 `aeza_service_groups` - Получение [групп услуг](/docs/groups.md)
 
-`aeza_service_types` - Получение доступных [типов услуг](/docs/service-types.md) 
+[`aeza_service_types`](/docs/Data-sources/aeza_service_types.md) - Получение доступных типов услуг
 
-[Спецификации здесь](/docs/data-sources.md)
+
 
 ### **Resources**
 В разработке
