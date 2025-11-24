@@ -1,7 +1,9 @@
 // internal/client/models.go
 package models
 
-import "github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
+import (
+	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/next"
+)
 
 type TerraformService struct {
 	ID           int     `json:"id"`
@@ -146,5 +148,5 @@ type ServiceGetResponse struct {
 }
 
 type OperatingSystem struct {
-	legacy.OperatingSystem
+	next.OperatingSystem
 }

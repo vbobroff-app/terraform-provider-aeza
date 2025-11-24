@@ -58,6 +58,10 @@ func OSDataSource() *schema.Resource {
 								Type: schema.TypeInt,
 							},
 						},
+						"order": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -84,6 +88,7 @@ func osRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.
 			"slug":       os.Slug,
 			"username":   os.Username,
 			"targets":    os.Targets,
+			"order":      os.Order, // добавляем поле order
 		}
 	}
 

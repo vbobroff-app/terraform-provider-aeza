@@ -76,8 +76,6 @@ func (r *Request) Do(ctx context.Context, result interface{}) error {
 		return fmt.Errorf("API error %d: %s", resp.StatusCode, string(body))
 	}
 
-	fmt.Printf("🔧 DEBUG: Response body: %s\n", string(body))
-
 	if result != nil {
 		if err := json.Unmarshal(body, result); err != nil {
 			return fmt.Errorf("failed to unmarshal response: %w", err)

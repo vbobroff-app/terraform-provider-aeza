@@ -34,3 +34,13 @@ func (c *Client) ListServiceGroups_V2(ctx context.Context, serviceType string) (
 
 	return response.Items, nil
 }
+
+func (c *Client) ListOS_V2(ctx context.Context) ([]next.OperatingSystem, error) {
+	var response []next.OperatingSystem
+	err := c.NewRequest("GET", "/v2/services/operating-systems", nil).Do(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}

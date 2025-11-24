@@ -1,6 +1,6 @@
 # **Использование API и авторизация**
 
-Для общения с API Aeza проедоставляет две версии:
+Для общения с API **Aeza** проедоставляет **две версии:**
 1) `https://my.aeza.net/api` legacy-версия, основная стабильная. Имеет [документацию](https://github.com/AezaGroup/dev-docs/tree/main) (частично актуальная, местами устаревшая).
     - [Использование API и авторизация](https://github.com/AezaGroup/dev-docs/blob/main/t/usage.md)
     - [Заказ и оформление услуг](https://github.com/AezaGroup/dev-docs/blob/main/t/service.md)

@@ -14,3 +14,7 @@ type ServiceGroupsResponse struct {
 	Items []ServiceGroup `json:"items"`
 	Total int            `json:"total"`
 }
+
+type OSResponse struct {
+	OperatingSystems []OperatingSystem `json:"operating_systems"`
+}

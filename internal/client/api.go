@@ -75,6 +75,17 @@ func (c *Client) ListProducts(ctx context.Context) ([]models.Product, error) {
 }
 
 func (c *Client) ListOS(ctx context.Context) ([]models.OperatingSystem, error) {
+	// Сначала пытаемся получить данные из V2 API
+	nextOS, err := c.ListOS_V2(ctx)
+	if err == nil && len(nextOS) > 0 {
+		var result []models.OperatingSystem
+		for _, os := range nextOS {
+			result = append(result, models.OperatingSystem{OperatingSystem: os})
+		}
+		return result, nil
+	}
+
+	// Если V2 не сработал, пробуем Legacy API
 	legacyOS, err := c.ListOS_Legacy(ctx)
 	if err != nil {
 		return nil, err
@@ -82,7 +93,7 @@ func (c *Client) ListOS(ctx context.Context) ([]models.OperatingSystem, error) {
 
 	var result []models.OperatingSystem
 	for _, os := range legacyOS {
-		result = append(result, models.OperatingSystem{OperatingSystem: os})
+		result = append(result, models.OperatingSystem{OperatingSystem: utils.ConvertOsFromLegacy(os)})
 	}
 
 	return result, nil
