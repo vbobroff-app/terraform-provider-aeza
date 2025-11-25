@@ -17,6 +17,15 @@ curl -X 'GET' \
   -H 'X-API-KEY: yourAPIkey'
 ```
 
+Что в ответе
+```go
+type ListServicesResponse struct {
+	Items []Service `json:"items"`
+	Total int       `json:"total"`
+}
+```
+
+
 ### 📊 **Структуры данных**
 V2 API Response
 

@@ -61,7 +61,7 @@ cp terraform-provider-aeza ~/.terraform.d/plugins/
 
 [`aeza_os`](/docs/Data-sources/aeza_os.md) - Получение списка операционных систем
 
-`aeza_service_groups` - Получение [групп услуг](/docs/groups.md)
+[`aeza_service_groups`](/docs/Data-sources/aeza_service_groups.md) - Получение групп услуг
 
 [`aeza_service_types`](/docs/Data-sources/aeza_service_types.md) - Получение доступных типов услуг
 

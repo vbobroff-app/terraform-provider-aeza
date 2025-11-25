@@ -34,6 +34,13 @@ curl -X 'GET' \
 
 Что в ответе - массив операционных систем []OperatingSystem
 
+```go
+type OSResponse struct {
+	OperatingSystems []OperatingSystem `json:"operating_systems"`
+}
+```
+
+
 ### **Структура OperatingSystem**
 
 ```go
