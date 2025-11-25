@@ -62,7 +62,7 @@ type ServiceType struct {
 ```
 </br>
 
-**ResponseServiceType.Data:**
+#### Стуктура **ResponseServiceType.Data**
 | Поле | Тип | Описание |
 |------|-----|-----------|
 | `SelectorMode` | string | Режим выбора (например, "all") |
@@ -71,9 +71,8 @@ type ServiceType struct {
 | `Total` | number | Общее количество типов |
 | `Edit` | boolean | Флаг возможности редактирования |
 
-</br>
 
-**ServiceType:**
+#### Стуктура **ServiceType**
 | Поле | Тип | Описание |
 |------|-----|-----------|
 | `Slug` | string | Уникальный идентификатор типа (vps, dedicated, domain и т.д.) |
@@ -83,3 +82,5 @@ type ServiceType struct {
 | `LocaledPayload` | object | Локализованные дополнительные данные |
 | `Name` | string | Основное название (вероятно на языке пользователя) |
 | `PrettyLocaledPayload` | object | Форматированные локализованные данные |
+
+Этот endpoint используется как основной для получения списка типов услуг
