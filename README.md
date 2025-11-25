@@ -57,7 +57,7 @@ cp terraform-provider-aeza ~/.terraform.d/plugins/
 
 [`aeza_products`](/docs/Data-sources/aeza_products.md) - Получение списка доступных продуктов
 
-`aeza_services` - Получение списка активных [услуг](/docs/services.md)
+[`aeza_services`](/docs/Data-sources/aeza_services.md) - Получение списка активных услуг
 
 [`aeza_os`](/docs/Data-sources/aeza_os.md) - Получение списка операционных систем
 

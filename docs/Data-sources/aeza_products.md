@@ -6,14 +6,14 @@
 
 ##### **Схема данных**
 
-| Поле | Тип | Обязательный | Описание |
-|------|-----|--------------|-----------|
-| `id` | `number` | Только чтение | Уникальный идентификатор продукта |
-| `name` | `string` | Только чтение | Название продукта (например: "MSK-1", "AMD Ryzen 9 5950X – 10 Gbps") |
-| `type` | `string` | Только чтение | Тип продукта (vps, dedicated, domain, storage, hicpu и т.д.) |
-| `group_id` | `number` | Только чтение | Идентификатор группы продуктов |
-| `service_handler` | `string` | Только чтение | Обработчик сервиса (vm6, manual, feru, s3, ispmgr и т.д.) |
-| `prices` | `map` | Только чтение | Цены продукта в различных периодах (hour, month, year, half_year, quarter_year) |
+| Поле | Тип  | Описание |
+|------|-----|-----------|
+| `id` | number |  Уникальный идентификатор продукта |
+| `name` | string | Название продукта (например: "MSK-1", "AMD Ryzen 9 5950X – 10 Gbps") |
+| `type` | string | Тип продукта (vps, dedicated, domain, storage, hicpu и т.д.) |
+| `group_id` | number |  Идентификатор группы продуктов |
+| `service_handler` | string |  Обработчик сервиса (vm6, manual, feru, s3, ispmgr и т.д.) |
+| `prices` | map | Цены продукта в различных периодах (hour, month, year, half_year, quarter_year) |
 
 Все поля доступны только для чтения.
 
