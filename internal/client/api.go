@@ -10,19 +10,19 @@ import (
 )
 
 func (c *Client) ListServices(ctx context.Context) ([]models.TerraformService, error) {
-	// Пробуем сначала API v2 (более быстрый и простой)
-	nextServices, err := c.ListServices_V2(ctx)
-	if err == nil && len(nextServices) > 0 {
-		return utils.ConvertNextServices(nextServices), nil
+	// Пробуем сначала Legacy API
+	legacyServices, err := c.ListServicesVPS_legacy(ctx)
+	if err == nil && len(legacyServices) > 0 {
+		return utils.ConvertLegacyServices(legacyServices), nil
 	}
 
-	// Fallback на Legacy API
-	legacyServices, err := c.ListServicesVPS_legacy(ctx)
+	// Fallback на API v2
+	nextServices, err := c.ListServices_V2(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return utils.ConvertLegacyServices(legacyServices), nil
+	return utils.ConvertNextServices(nextServices), nil
 }
 
 func (c *Client) ListServiceTypes(ctx context.Context) ([]models.ServiceType, error) {

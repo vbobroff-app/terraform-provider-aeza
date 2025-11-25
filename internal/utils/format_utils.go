@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-// FormatPrice форматирует цену в "X,XX EUR"
+// FormatPrice форматирует цену в "X,XX €"
 func FormatPrice(price float64) string {
-	// Предполагаем, что цена в копейках/центах (494 = 4.94 EUR)
+	// Предполагаем, что цена в копейках/центах (494 = 4.94 €)
 	euros := float64(price) / 100.0
 	// Заменяем точку на запятую для европейского формата
 	formatted := fmt.Sprintf("%.2f", euros)
 	formatted = strings.Replace(formatted, ".", ",", 1)
-	return fmt.Sprintf("%s EUR", formatted)
+	return fmt.Sprintf("%s €", formatted)
 }
 
 // FormatDate преобразует ISO дату в формат "DD.MM.YYYY THH:MM:SS.MSZ"
