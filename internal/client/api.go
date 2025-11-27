@@ -116,3 +116,7 @@ func (c *Client) CreateService(ctx context.Context, req models.ServiceCreateRequ
 
 	return &terraformResp, nil
 }
+
+func (c *Client) DeleteService(ctx context.Context, id int64) error {
+	return c.DeleteService_legacy(ctx, id)
+}

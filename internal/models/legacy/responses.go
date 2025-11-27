@@ -50,3 +50,8 @@ type OSResponse struct {
 		Items []OperatingSystem `json:"items"`
 	} `json:"data"`
 }
+
+// ServiceDeleteResponse - ответ на удаление услуги через Legacy API
+type ServiceDeleteResponse struct {
+	Data string `json:"data"`
+}

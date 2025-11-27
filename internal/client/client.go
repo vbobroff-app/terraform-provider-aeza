@@ -4,6 +4,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
@@ -44,6 +45,10 @@ func NewClient(baseUrl, apiKey string) (*Client, error) {
 // }
 
 func (c *Client) GetService(ctx context.Context, id int64) (*models.ServiceGetResponse, error) {
+
+	// ВРЕМЕННО: логируем какой ID запрашивается
+	log.Printf("[DEBUG] !!!GetService called with ID: %d", id)
+
 	var response models.ServiceGetResponse
 	err := c.NewRequest("GET", fmt.Sprintf("/services/%d", id), nil).Do(ctx, &response)
 	if err != nil {
@@ -54,10 +59,6 @@ func (c *Client) GetService(ctx context.Context, id int64) (*models.ServiceGetRe
 
 func (c *Client) UpdateService(ctx context.Context, id int64, req models.ServiceCreateRequest) error {
 	return c.NewRequest("PUT", fmt.Sprintf("/services/%d", id), req).Do(ctx, nil)
-}
-
-func (c *Client) DeleteService(ctx context.Context, id int64) error {
-	return c.NewRequest("DELETE", fmt.Sprintf("/services/%d", id), nil).Do(ctx, nil)
 }
 
 func (r *Request) AddQueryParam(key, value string) *Request {

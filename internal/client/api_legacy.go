@@ -115,3 +115,20 @@ func (c *Client) CreateService_legacy(ctx context.Context, req legacy.ServiceCre
 
 	return &response, nil
 }
+
+func (c *Client) DeleteService_legacy(ctx context.Context, id int64) error {
+	var response legacy.ServiceDeleteResponse
+
+	path := fmt.Sprintf("/services/%d", id)
+
+	err := c.NewRequest("DELETE", path, nil).Do(ctx, &response)
+	if err != nil {
+		return fmt.Errorf("failed to delete service via legacy API: %w", err)
+	}
+
+	if response.Data != "ok" {
+		return fmt.Errorf("unexpected response from delete API: %s", response.Data)
+	}
+
+	return nil
+}

@@ -2,6 +2,8 @@
 package utils
 
 import (
+	"log"
+
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
 )
@@ -43,6 +45,8 @@ func ConvertFromLegacy_ServiceCreateResponse(resp legacy.ServiceCreateResponse) 
 	if len(item.CreatedServiceIds) > 0 {
 		serviceID = item.CreatedServiceIds[0]
 	}
+
+	log.Printf("[DEBUG] !!!ConvertFromLegacy_ServiceCreateResponse: Using Service ID from createdServiceIds: %d", serviceID)
 
 	// Извлекаем LocationName из product.group.payload.label
 	locationName := extractLocationName(item.Product)
