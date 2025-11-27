@@ -55,29 +55,9 @@ func ConvertLegacyProduct(legacyProduct legacy.Product) models.Product {
 			configSummary := models.ConfigurationSummary{
 				Slug: getStringValue(summaryMap, "slug"),
 				Type: getStringValue(summaryMap, "type"),
+				Max:  getFloatValue(summaryMap, "max"),
+				Base: getFloatValue(summaryMap, "base"),
 			}
-
-			// Обрабатываем числа (могут быть int или float64)
-			if max, ok := summaryMap["max"]; ok {
-				if f, ok := max.(float64); ok {
-					configSummary.Max = f
-				} else if i, ok := max.(int); ok {
-					configSummary.Max = float64(i)
-				} else if i, ok := max.(int64); ok {
-					configSummary.Max = float64(i)
-				}
-			}
-
-			if base, ok := summaryMap["base"]; ok {
-				if f, ok := base.(float64); ok {
-					configSummary.Base = f
-				} else if i, ok := base.(int); ok {
-					configSummary.Base = float64(i)
-				} else if i, ok := base.(int64); ok {
-					configSummary.Base = float64(i)
-				}
-			}
-
 			product.SummaryConfiguration[key] = configSummary
 		}
 	}
@@ -93,4 +73,21 @@ func getStringValue(m map[string]interface{}, key string) string {
 		}
 	}
 	return ""
+}
+
+// Добавляем безопасное извлечение числовых значений
+func getFloatValue(m map[string]interface{}, key string) float64 {
+	if val, ok := m[key]; ok {
+		switch v := val.(type) {
+		case float64:
+			return v
+		case int:
+			return float64(v)
+		case int64:
+			return float64(v)
+		case float32:
+			return float64(v)
+		}
+	}
+	return 0
 }

@@ -1,4 +1,4 @@
-# examples/basic/main.tf
+# examples/resources/main.tf
 terraform {
   required_providers {
     aeza = {
@@ -19,5 +19,6 @@ resource "aeza_service" "test_vps" {
   payment_term  = "hour"
   auto_prolong  = false
   os            = "ubuntu_2404"
+  
 }
 

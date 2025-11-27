@@ -1,10 +1,11 @@
-// internal/client/api_next.go
+// internal/client/api.go
 
 package client
 
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/utils"
@@ -119,4 +120,27 @@ func (c *Client) CreateService(ctx context.Context, req models.ServiceCreateRequ
 
 func (c *Client) DeleteService(ctx context.Context, id int64) error {
 	return c.DeleteService_legacy(ctx, id)
+}
+
+func (c *Client) GetService(ctx context.Context, id int64) (*models.Service, error) {
+	log.Printf("[DEBUG] GetService called with ID: %d", id)
+
+	// Вызываем legacy метод
+	legacyResp, err := c.GetService_legacy(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service: %w", err)
+	}
+
+	// Проверяем что есть items
+	if len(legacyResp.Data.Items) == 0 {
+		return nil, fmt.Errorf("service with ID %d not found", id)
+	}
+
+	// ✅ Берем первый item и сразу конвертируем в models.Service
+	legacyService := legacyResp.Data.Items[0]
+	terraformService := utils.ConvertLegacyServiceGetToTerraform(legacyService)
+
+	log.Printf("[DEBUG] GetService: successfully converted service ID %d", terraformService.ID)
+
+	return &terraformService, nil
 }

@@ -4,6 +4,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
 )
@@ -131,4 +132,23 @@ func (c *Client) DeleteService_legacy(ctx context.Context, id int64) error {
 	}
 
 	return nil
+}
+
+func (c *Client) GetService_legacy(ctx context.Context, id int64) (*legacy.ServiceGetResponse, error) {
+	var response legacy.ServiceGetResponse
+	path := fmt.Sprintf("/services/%d", id)
+
+	err := c.NewRequest("GET", path, nil).Do(ctx, &response)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service via legacy API: %w", err)
+	}
+
+	// Логируем для отладки
+	log.Printf("[DEBUG] GetService_legacy: received %d items for service ID %d", len(response.Data.Items), id)
+
+	if len(response.Data.Items) == 0 {
+		return nil, fmt.Errorf("no service found with ID %d", id)
+	}
+
+	return &response, nil
 }

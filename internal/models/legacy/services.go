@@ -1,4 +1,4 @@
-// models/responses/legacy/legacy_models.go
+// models/legacy/services.go
 package legacy
 
 type Service struct {
@@ -56,7 +56,7 @@ type ServiceVPS struct {
 	RawPrices            map[string]int               `json:"rawPrices"`
 	SummaryConfiguration map[string]ConfigurationItem `json:"summaryConfiguration"`
 	IndividualPrices     map[string]int               `json:"individualPrices"`
-	CurrentTask          *string                      `json:"currentTask"`
+	CurrentTask          interface{}                  `json:"currentTask"`
 }
 
 type Parameters struct {

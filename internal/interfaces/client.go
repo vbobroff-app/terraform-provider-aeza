@@ -21,7 +21,7 @@ type ResourceClient interface {
 	DataClient // Включаем все методы data sources
 
 	CreateService(ctx context.Context, req models.ServiceCreateRequest) (*models.ServiceCreateResponse, error)
-	GetService(ctx context.Context, id int64) (*models.ServiceGetResponse, error)
+	GetService(ctx context.Context, id int64) (*models.Service, error)
 	UpdateService(ctx context.Context, id int64, req models.ServiceCreateRequest) error
 	DeleteService(ctx context.Context, id int64) error
 }

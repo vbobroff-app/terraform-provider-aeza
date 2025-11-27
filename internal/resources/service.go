@@ -1,8 +1,11 @@
+// /internal/resources/service.go
 package resources
 
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -48,16 +51,19 @@ func ServiceResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
+				Computed: true, // ✅ Добавляем
 			},
 			"recipe": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
+				Computed: true, // ✅ Добавляем
 			},
 			"iso_url": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
+				Computed: true, // ✅ Добавляем
 			},
 			// ✅ Вычисляемые поля из ServiceCreateResponse
 			"order_id": {
@@ -154,20 +160,109 @@ func serviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 		return diag.FromErr(err)
 	}
 
-	// ✅ Получаем детальную информацию об услуге
-	resp, err := client.GetService(ctx, id)
+	// Получаем услугу напрямую
+	service, err := client.GetService(ctx, id)
 	if err != nil {
+		// Если услуга не найдена, помечаем для удаления из состояния
+		if strings.Contains(err.Error(), "not found") {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(fmt.Errorf("error reading service: %w", err))
 	}
 
-	service := resp.Service
+	if service == nil {
+		// Сервис не найден - удаляем из состояния
+		d.SetId("")
+		return nil
+	}
 
-	// ✅ Устанавливаем поля из ServiceGetResponse
-	if err := setServiceGetResponse(d, service); err != nil {
+	// ✅ Выносим все установки полей в отдельную функцию
+	if err := setServiceGetResponse(d, *service); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting service data: %w", err))
 	}
 
+	log.Printf("[DEBUG] serviceRead: successfully read service ID %s", d.Id())
 	return nil
+}
+
+func setServiceGetResponse(d *schema.ResourceData, service models.Service) error {
+	// ✅ Основные поля конфигурации
+	if err := setFieldIfNotEmpty(d, "name", service.Name); err != nil {
+		return fmt.Errorf("error setting name: %w", err)
+	}
+	if err := d.Set("product_id", service.ProductID); err != nil {
+		return fmt.Errorf("error setting product_id: %w", err)
+	}
+	if err := setFieldIfNotEmpty(d, "payment_term", service.PaymentTerm); err != nil {
+		return fmt.Errorf("error setting payment_term: %w", err)
+	}
+	if err := d.Set("auto_prolong", service.AutoProlong); err != nil {
+		return fmt.Errorf("error setting auto_prolong: %w", err)
+	}
+
+	// ✅ Параметры (os, recipe, iso_url)
+	if err := setServiceParameters(d, service.Parameters); err != nil {
+		return fmt.Errorf("error setting service parameters: %w", err)
+	}
+
+	// ✅ Обновляемые вычисляемые поля
+	if err := setFieldIfNotEmpty(d, "status", service.Status); err != nil {
+		return fmt.Errorf("error setting status: %w", err)
+	}
+	if err := setFieldIfNotEmpty(d, "ip", service.IP); err != nil {
+		return fmt.Errorf("error setting ip: %w", err)
+	}
+	if err := setFieldIfNotEmpty(d, "created_at", service.CreatedAt); err != nil {
+		return fmt.Errorf("error setting created_at: %w", err)
+	}
+	if err := setFieldIfNotEmpty(d, "updated_at", service.UpdatedAt); err != nil {
+		return fmt.Errorf("error setting updated_at: %w", err)
+	}
+
+	return nil
+}
+
+// setServiceParameters устанавливает параметры услуги из map
+func setServiceParameters(d *schema.ResourceData, parameters map[string]interface{}) error {
+	if parameters == nil {
+		return nil
+	}
+
+	// Для VPS услуг
+	if os, exists := parameters["os"]; exists {
+		if osStr, ok := os.(string); ok && osStr != "" {
+			if err := d.Set("os", osStr); err != nil {
+				return fmt.Errorf("error setting os: %w", err)
+			}
+		}
+	}
+
+	if isoURL, exists := parameters["isoUrl"]; exists {
+		if isoURLStr, ok := isoURL.(string); ok {
+			if err := d.Set("iso_url", isoURLStr); err != nil {
+				return fmt.Errorf("error setting iso_url: %w", err)
+			}
+		}
+	}
+
+	if recipe, exists := parameters["recipe"]; exists && recipe != nil {
+		if recipeStr, ok := recipe.(string); ok && recipeStr != "" {
+			if err := d.Set("recipe", recipeStr); err != nil {
+				return fmt.Errorf("error setting recipe: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// setFieldIfNotEmpty устанавливает поле только если значение не пустое
+func setFieldIfNotEmpty(d *schema.ResourceData, key, value string) error {
+	if value == "" {
+		return nil
+	}
+	return d.Set(key, value)
 }
 
 func serviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -215,13 +310,14 @@ func serviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}
 // ✅ Вспомогательные функции для установки данных
 
 func setServiceCreateResponse(d *schema.ResourceData, resp *models.ServiceCreateResponse) error {
+	// ✅ Вычисляемые поля из создания (устанавливаются только один раз)
 	if err := d.Set("order_id", resp.OrderID); err != nil {
 		return fmt.Errorf("error setting order_id: %w", err)
 	}
-	if err := d.Set("date", resp.Date); err != nil {
+	if err := setFieldIfNotEmpty(d, "date", resp.Date); err != nil {
 		return fmt.Errorf("error setting date: %w", err)
 	}
-	if err := d.Set("product_type", resp.ProductType); err != nil {
+	if err := setFieldIfNotEmpty(d, "product_type", resp.ProductType); err != nil {
 		return fmt.Errorf("error setting product_type: %w", err)
 	}
 	if resp.GroupId != nil {
@@ -229,49 +325,20 @@ func setServiceCreateResponse(d *schema.ResourceData, resp *models.ServiceCreate
 			return fmt.Errorf("error setting group_id: %w", err)
 		}
 	}
-	if err := d.Set("product_name", resp.ProductName); err != nil {
+	if err := setFieldIfNotEmpty(d, "product_name", resp.ProductName); err != nil {
 		return fmt.Errorf("error setting product_name: %w", err)
 	}
-	if err := d.Set("location_name", resp.LocationName); err != nil {
+	if err := setFieldIfNotEmpty(d, "location_name", resp.LocationName); err != nil {
 		return fmt.Errorf("error setting location_name: %w", err)
 	}
-	if err := d.Set("price", resp.Price); err != nil {
+	if err := setFieldIfNotEmpty(d, "price", resp.Price); err != nil {
 		return fmt.Errorf("error setting price: %w", err)
 	}
-	if err := d.Set("transaction_amount", resp.TransactionAmount); err != nil {
+	if err := setFieldIfNotEmpty(d, "transaction_amount", resp.TransactionAmount); err != nil {
 		return fmt.Errorf("error setting transaction_amount: %w", err)
 	}
-	if err := d.Set("status", resp.Status); err != nil {
+	if err := setFieldIfNotEmpty(d, "status", resp.Status); err != nil {
 		return fmt.Errorf("error setting status: %w", err)
-	}
-
-	return nil
-}
-
-func setServiceGetResponse(d *schema.ResourceData, service models.Service) error {
-	if err := d.Set("name", service.Name); err != nil {
-		return fmt.Errorf("error setting name: %w", err)
-	}
-	if err := d.Set("product_id", service.ProductID); err != nil {
-		return fmt.Errorf("error setting product_id: %w", err)
-	}
-	if err := d.Set("payment_term", service.PaymentTerm); err != nil {
-		return fmt.Errorf("error setting payment_term: %w", err)
-	}
-	if err := d.Set("auto_prolong", service.AutoProlong); err != nil {
-		return fmt.Errorf("error setting auto_prolong: %w", err)
-	}
-	if err := d.Set("status", service.Status); err != nil {
-		return fmt.Errorf("error setting status: %w", err)
-	}
-	if err := d.Set("ip", service.IP); err != nil {
-		return fmt.Errorf("error setting ip: %w", err)
-	}
-	if err := d.Set("created_at", service.CreatedAt); err != nil {
-		return fmt.Errorf("error setting created_at: %w", err)
-	}
-	if err := d.Set("updated_at", service.UpdatedAt); err != nil {
-		return fmt.Errorf("error setting updated_at: %w", err)
 	}
 
 	return nil

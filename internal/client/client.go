@@ -4,7 +4,6 @@ package client
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
@@ -44,18 +43,18 @@ func NewClient(baseUrl, apiKey string) (*Client, error) {
 // 	return &response, nil
 // }
 
-func (c *Client) GetService(ctx context.Context, id int64) (*models.ServiceGetResponse, error) {
+// func (c *Client) GetService(ctx context.Context, id int64) (*models.ServiceGetResponse, error) {
 
-	// ВРЕМЕННО: логируем какой ID запрашивается
-	log.Printf("[DEBUG] !!!GetService called with ID: %d", id)
+// 	// ВРЕМЕННО: логируем какой ID запрашивается
+// 	log.Printf("[DEBUG] !!!GetService called with ID: %d", id)
 
-	var response models.ServiceGetResponse
-	err := c.NewRequest("GET", fmt.Sprintf("/services/%d", id), nil).Do(ctx, &response)
-	if err != nil {
-		return nil, err
-	}
-	return &response, nil
-}
+// 	var response models.ServiceGetResponse
+// 	err := c.NewRequest("GET", fmt.Sprintf("/services/%d", id), nil).Do(ctx, &response)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &response, nil
+// }
 
 func (c *Client) UpdateService(ctx context.Context, id int64, req models.ServiceCreateRequest) error {
 	return c.NewRequest("PUT", fmt.Sprintf("/services/%d", id), req).Do(ctx, nil)
