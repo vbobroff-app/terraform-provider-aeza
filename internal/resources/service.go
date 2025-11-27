@@ -1,4 +1,3 @@
-// resources/service.go
 package resources
 
 import (
@@ -33,10 +32,12 @@ func ServiceResource() *schema.Resource {
 			"product_id": {
 				Type:     schema.TypeInt,
 				Required: true,
+				ForceNew: true,
 			},
 			"location_code": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"payment_term": {
 				Type:     schema.TypeString,
@@ -48,6 +49,55 @@ func ServiceResource() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"os": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+			"recipe": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+			"iso_url": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+			// ✅ Вычисляемые поля из ServiceCreateResponse
+			"order_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"product_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"group_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"product_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"location_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"price": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"transaction_amount": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			// ✅ Поля из ServiceGetResponse
 			"status": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -67,6 +117,7 @@ func ServiceResource() *schema.Resource {
 		},
 	}
 }
+
 func serviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(interfaces.ResourceClient)
 
@@ -76,6 +127,9 @@ func serviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}
 		LocationCode: d.Get("location_code").(string),
 		PaymentTerm:  d.Get("payment_term").(string),
 		AutoProlong:  d.Get("auto_prolong").(bool),
+		OS:           d.Get("os").(string),
+		Recipe:       d.Get("recipe").(string),
+		IsoURL:       d.Get("iso_url").(string),
 	}
 
 	resp, err := client.CreateService(ctx, req)
@@ -83,13 +137,19 @@ func serviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}
 		return diag.FromErr(fmt.Errorf("error creating service: %w", err))
 	}
 
-	// Проверяем что ID не равен 0 (что указывает на ошибку)
 	if resp.ID == 0 {
-		return diag.FromErr(fmt.Errorf("API returned ID=0, indicating creation failed. Response: %+v", resp))
+		return diag.FromErr(fmt.Errorf("API returned ID=0, creation failed"))
 	}
 
+	// ✅ Устанавливаем ID созданной услуги
 	d.SetId(fmt.Sprintf("%d", resp.ID))
-	return serviceRead(ctx, d, meta)
+
+	// ✅ Сохраняем все вычисляемые поля из ответа создания
+	if err := setServiceCreateResponse(d, resp); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting service response data: %w", err))
+	}
+
+	return nil
 }
 
 func serviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -100,19 +160,18 @@ func serviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 		return diag.FromErr(err)
 	}
 
+	// ✅ Получаем детальную информацию об услуге
 	resp, err := client.GetService(ctx, id)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error reading service: %w", err))
 	}
 
 	service := resp.Service
-	d.Set("name", service.Name)
-	d.Set("product_id", service.ProductID)
-	d.Set("location_code", service.LocationCode)
-	d.Set("payment_term", service.PaymentTerm)
-	d.Set("auto_prolong", service.AutoProlong)
-	d.Set("status", service.Status)
-	d.Set("ip", service.IP)
+
+	// ✅ Устанавливаем поля из ServiceGetResponse
+	if err := setServiceGetResponse(d, service); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting service data: %w", err))
+	}
 
 	return nil
 }
@@ -125,15 +184,12 @@ func serviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}
 		return diag.FromErr(err)
 	}
 
-	// Проверяем только те поля которые можно обновлять
 	if d.HasChanges("name", "payment_term", "auto_prolong") {
 		req := models.ServiceCreateRequest{
 			Name:        d.Get("name").(string),
 			PaymentTerm: d.Get("payment_term").(string),
 			AutoProlong: d.Get("auto_prolong").(bool),
-			// ProductID и LocationCode обычно нельзя менять после создания
-			ProductID:    int64(d.Get("product_id").(int)),
-			LocationCode: d.Get("location_code").(string),
+			// Не передаем ForceNew поля
 		}
 
 		err := client.UpdateService(ctx, id, req)
@@ -159,6 +215,71 @@ func serviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}
 	}
 
 	d.SetId("")
+	return nil
+}
+
+// ✅ Вспомогательные функции для установки данных
+
+func setServiceCreateResponse(d *schema.ResourceData, resp *models.ServiceCreateResponse) error {
+	if err := d.Set("order_id", resp.OrderID); err != nil {
+		return fmt.Errorf("error setting order_id: %w", err)
+	}
+	if err := d.Set("date", resp.Date); err != nil {
+		return fmt.Errorf("error setting date: %w", err)
+	}
+	if err := d.Set("product_type", resp.ProductType); err != nil {
+		return fmt.Errorf("error setting product_type: %w", err)
+	}
+	if resp.GroupId != nil {
+		if err := d.Set("group_id", *resp.GroupId); err != nil {
+			return fmt.Errorf("error setting group_id: %w", err)
+		}
+	}
+	if err := d.Set("product_name", resp.ProductName); err != nil {
+		return fmt.Errorf("error setting product_name: %w", err)
+	}
+	if err := d.Set("location_name", resp.LocationName); err != nil {
+		return fmt.Errorf("error setting location_name: %w", err)
+	}
+	if err := d.Set("price", resp.Price); err != nil {
+		return fmt.Errorf("error setting price: %w", err)
+	}
+	if err := d.Set("transaction_amount", resp.TransactionAmount); err != nil {
+		return fmt.Errorf("error setting transaction_amount: %w", err)
+	}
+	if err := d.Set("status", resp.Status); err != nil {
+		return fmt.Errorf("error setting status: %w", err)
+	}
+
+	return nil
+}
+
+func setServiceGetResponse(d *schema.ResourceData, service models.Service) error {
+	if err := d.Set("name", service.Name); err != nil {
+		return fmt.Errorf("error setting name: %w", err)
+	}
+	if err := d.Set("product_id", service.ProductID); err != nil {
+		return fmt.Errorf("error setting product_id: %w", err)
+	}
+	if err := d.Set("payment_term", service.PaymentTerm); err != nil {
+		return fmt.Errorf("error setting payment_term: %w", err)
+	}
+	if err := d.Set("auto_prolong", service.AutoProlong); err != nil {
+		return fmt.Errorf("error setting auto_prolong: %w", err)
+	}
+	if err := d.Set("status", service.Status); err != nil {
+		return fmt.Errorf("error setting status: %w", err)
+	}
+	if err := d.Set("ip", service.IP); err != nil {
+		return fmt.Errorf("error setting ip: %w", err)
+	}
+	if err := d.Set("created_at", service.CreatedAt); err != nil {
+		return fmt.Errorf("error setting created_at: %w", err)
+	}
+	if err := d.Set("updated_at", service.UpdatedAt); err != nil {
+		return fmt.Errorf("error setting updated_at: %w", err)
+	}
+
 	return nil
 }
 

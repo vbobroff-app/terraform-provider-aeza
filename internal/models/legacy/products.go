@@ -5,8 +5,8 @@ type Product struct {
 	ID                     int                    `json:"id"`
 	Name                   string                 `json:"name"`
 	Type                   string                 `json:"type"`
-	GroupID                *int                   `json:"groupId"`
-	Order                  int                    `json:"order"`
+	GroupID                *int64                 `json:"groupId"`
+	Order                  int64                  `json:"order"`
 	Configuration          []ProductConfig        `json:"configuration"`
 	DefaultParameters      map[string]interface{} `json:"defaultParameters"`
 	Payload                map[string]interface{} `json:"payload"`

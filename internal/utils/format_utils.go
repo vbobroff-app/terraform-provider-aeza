@@ -28,3 +28,21 @@ func FormatDate(isoDate string) string {
 	// Форматируем в "DD.MM.YYYY THH:MM:SS.MSZ"
 	return t.Format("02.01.2006 T15:04:05.000Z")
 }
+
+// FormatDateFromUnix преобразует Unix timestamp в формат "DD.MM.YYYY THH:MM:SS.MSZ"
+func FormatDateFromUnix(unixTimestamp int64) string {
+	if unixTimestamp == 0 {
+		return ""
+	}
+
+	t := time.Unix(unixTimestamp, 0)
+	return t.Format("02.01.2006 T15:04:05.000Z")
+}
+
+// stringToPtr преобразует строку в указатель
+func stringToPtr(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}

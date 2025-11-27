@@ -32,16 +32,16 @@ func NewClient(baseUrl, apiKey string) (*Client, error) {
 // Returns:
 //   - *ServiceCreateResponse: created service details
 //   - error: any error that occurred during creation
-func (c *Client) CreateService(ctx context.Context, req models.ServiceCreateRequest) (*models.ServiceCreateResponse, error) {
-	var response models.ServiceCreateResponse
+// func (c *Client) CreateService(ctx context.Context, req models.ServiceCreateRequest) (*models.ServiceCreateResponse, error) {
+// 	var response models.ServiceCreateResponse
 
-	err := c.NewRequest("POST", "/services", req).Do(ctx, &response)
-	if err != nil {
-		return nil, err
-	}
+// 	err := c.NewRequest("POST", "/services", req).Do(ctx, &response)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return &response, nil
-}
+// 	return &response, nil
+// }
 
 func (c *Client) GetService(ctx context.Context, id int64) (*models.ServiceGetResponse, error) {
 	var response models.ServiceGetResponse

@@ -1,4 +1,4 @@
-// internal/client/models.go
+// internal/models/models.go
 package models
 
 import (
@@ -97,22 +97,6 @@ type ServiceType struct {
 	Names   map[string]string      `json:"names"`
 	Payload map[string]interface{} `json:"payload"`
 	Name    string                 `json:"name"`
-}
-
-// ServiceCreateRequest - запрос на создание услуги
-type ServiceCreateRequest struct {
-	Name         string `json:"name"`
-	ProductID    int64  `json:"productId"`
-	LocationCode string `json:"locationCode"`
-	PaymentTerm  string `json:"paymentTerm"`
-	AutoProlong  bool   `json:"autoProlong"`
-}
-
-// ServiceCreateResponse - ответ на создание услуги
-type ServiceCreateResponse struct {
-	ID     int64                   `json:"id"`
-	Status string                  `json:"status"`
-	Error  *map[string]interface{} `json:"error,omitempty"` // Меняем *string на *map[string]interface{}
 }
 
 // Service представляет услугу в Aeza

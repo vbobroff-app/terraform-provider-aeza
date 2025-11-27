@@ -4,6 +4,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/utils"
@@ -97,4 +98,21 @@ func (c *Client) ListOS(ctx context.Context) ([]models.OperatingSystem, error) {
 	}
 
 	return result, nil
+}
+
+// CreateService создает услугу через Legacy API с конвертацией моделей
+func (c *Client) CreateService(ctx context.Context, req models.ServiceCreateRequest) (*models.ServiceCreateResponse, error) {
+	// Конвертируем Terraform модель в Legacy API запрос
+	legacyReq := utils.ConvertToLegacy_ServiceCreateRequest(req)
+
+	// Вызываем Legacy метод
+	legacyResp, err := c.CreateService_legacy(ctx, legacyReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create service via legacy API: %w", err)
+	}
+
+	// Конвертируем Legacy API ответ в Terraform модель
+	terraformResp := utils.ConvertFromLegacy_ServiceCreateResponse(*legacyResp)
+
+	return &terraformResp, nil
 }
