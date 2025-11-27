@@ -34,11 +34,6 @@ func ServiceResource() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"location_code": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
 			"payment_term": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -122,14 +117,13 @@ func serviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}
 	client := meta.(interfaces.ResourceClient)
 
 	req := models.ServiceCreateRequest{
-		Name:         d.Get("name").(string),
-		ProductID:    int64(d.Get("product_id").(int)),
-		LocationCode: d.Get("location_code").(string),
-		PaymentTerm:  d.Get("payment_term").(string),
-		AutoProlong:  d.Get("auto_prolong").(bool),
-		OS:           d.Get("os").(string),
-		Recipe:       d.Get("recipe").(string),
-		IsoURL:       d.Get("iso_url").(string),
+		Name:        d.Get("name").(string),
+		ProductID:   int64(d.Get("product_id").(int)),
+		PaymentTerm: d.Get("payment_term").(string),
+		AutoProlong: d.Get("auto_prolong").(bool),
+		OS:          d.Get("os").(string),
+		Recipe:      d.Get("recipe").(string),
+		IsoURL:      d.Get("iso_url").(string),
 	}
 
 	resp, err := client.CreateService(ctx, req)

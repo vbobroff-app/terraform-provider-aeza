@@ -3,14 +3,13 @@ package models
 
 // ServiceCreateRequest - Terraform модель для создания услуги
 type ServiceCreateRequest struct {
-	Name         string `json:"name"`
-	ProductID    int64  `json:"product_id"`
-	LocationCode string `json:"location_code"`
-	PaymentTerm  string `json:"payment_term"`
-	AutoProlong  bool   `json:"auto_prolong"`
-	OS           string `json:"os,omitempty"`
-	Recipe       string `json:"recipe,omitempty"`
-	IsoURL       string `json:"iso_url,omitempty"`
+	Name        string `json:"name"`
+	ProductID   int64  `json:"product_id"`
+	PaymentTerm string `json:"payment_term"`
+	AutoProlong bool   `json:"auto_prolong"`
+	OS          string `json:"os,omitempty"`
+	Recipe      string `json:"recipe,omitempty"`
+	IsoURL      string `json:"iso_url,omitempty"`
 }
 
 // ServiceCreateResponse - Terraform модель ответа создания услуги

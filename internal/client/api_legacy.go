@@ -3,7 +3,6 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
@@ -91,15 +90,9 @@ func (c *Client) ListOS_Legacy(ctx context.Context) ([]legacy.OperatingSystem, e
 
 // CreateService_legacy создает услугу через Legacy API (существующий метод)
 func (c *Client) CreateService_legacy(ctx context.Context, req legacy.ServiceCreateRequest) (*legacy.ServiceCreateResponse, error) {
-	// Маршалим запрос в JSON
-	requestBody, err := json.Marshal(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal legacy service create request: %w", err)
-	}
-
+	// ✅ ПРАВИЛЬНО: передаем структуру, а не закодированный JSON
 	var response legacy.ServiceCreateResponse
-	// Создаем и выполняем HTTP запрос
-	err = c.NewRequest("POST", "/api/services/orders", requestBody).Do(ctx, &response)
+	err := c.NewRequest("POST", "/services/orders", req).Do(ctx, &response)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create service create request: %w", err)
 	}

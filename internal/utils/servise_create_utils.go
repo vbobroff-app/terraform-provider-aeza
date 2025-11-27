@@ -49,7 +49,13 @@ func ConvertFromLegacy_ServiceCreateResponse(resp legacy.ServiceCreateResponse) 
 
 	// Конвертируем цены из копеек в евро
 	price := FormatPrice(item.IndividualPrice)
-	transactionAmount := FormatPrice(transaction.Amount)
+
+	// Берем абсолютное значение для transaction amount (т.к. может быть отрицательным)
+	transactionAmountValue := transaction.Amount
+	if transactionAmountValue < 0 {
+		transactionAmountValue = -transactionAmountValue
+	}
+	transactionAmount := FormatPrice(transactionAmountValue)
 
 	return models.ServiceCreateResponse{
 		ID:                serviceID,

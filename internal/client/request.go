@@ -6,6 +6,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"time"
 
 	"io"
 	"net/http"
@@ -32,52 +34,81 @@ func (c *Client) NewRequest(method, path string, body interface{}) *Request {
 	}
 }
 
-// Do выполняет запрос
+// Do выполняет запрос с полным логированием
 func (r *Request) Do(ctx context.Context, result interface{}) error {
+	start := time.Now()
+
+	// Подготовка тела запроса
 	var bodyReader io.Reader
+	var requestBody []byte
+	var err error
+
 	if r.body != nil {
-		jsonData, err := json.Marshal(r.body)
+		requestBody, err = json.Marshal(r.body)
 		if err != nil {
 			return fmt.Errorf("failed to marshal request body: %w", err)
 		}
-		bodyReader = bytes.NewBuffer(jsonData)
+		bodyReader = bytes.NewBuffer(requestBody)
 	}
 
 	// Формируем URL с query-параметрами
-	baseURL := r.client.host + r.path
+	fullURL := r.client.host + r.path
 	if len(r.queryParams) > 0 {
-		query := url.Values{} // Теперь url.Values доступен
+		query := url.Values{}
 		for key, value := range r.queryParams {
 			query.Add(key, value)
 		}
-		baseURL = baseURL + "?" + query.Encode()
+		fullURL = fullURL + "?" + query.Encode()
 	}
 
-	req, err := http.NewRequestWithContext(ctx, r.method, baseURL, bodyReader)
+	// ДЕБАГ: выводим фактическое тело запроса
+	log.Printf("[DEBUG] !!!!!!!!!!ACTUAL REQUEST BODY: %s", string(requestBody))
+
+	// Создаем запрос
+	req, err := http.NewRequestWithContext(ctx, r.method, fullURL, bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
+	// Устанавливаем заголовки
 	req.Header.Set("X-API-Key", r.client.apiKey)
-	req.Header.Set("Content-Type", "application/json")
+	if r.body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
+	// Логируем запрос ДО отправки
+	r.client.logRequest(req.Method, fullURL, requestBody, req.Header)
+
+	// Выполняем запрос
 	resp, err := r.client.httpClient.Do(req)
 	if err != nil {
+		duration := time.Since(start)
+		r.client.logError(req.Method, fullURL, err, duration)
 		return fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	// Читаем ответ
+	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		duration := time.Since(start)
+		r.client.logError(req.Method, fullURL, err, duration)
 		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
+	duration := time.Since(start)
+
+	// Логируем ответ
+	r.client.logResponse(req.Method, fullURL, resp.Status, responseBody, resp.Header, duration)
+
+	// Обрабатываем ошибки HTTP
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("API error %d: %s", resp.StatusCode, string(body))
+		return fmt.Errorf("API error %d: %s", resp.StatusCode, string(responseBody))
 	}
 
+	// Парсим ответ если требуется
 	if result != nil {
-		if err := json.Unmarshal(body, result); err != nil {
+		if err := json.Unmarshal(responseBody, result); err != nil {
 			return fmt.Errorf("failed to unmarshal response: %w", err)
 		}
 	}
