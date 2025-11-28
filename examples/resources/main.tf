@@ -14,11 +14,11 @@ provider "aeza" {
 }
 
 resource "aeza_service" "test_vps" {
-  name          = "test-hourly-vps"
+# неизменные параметры
   product_id    = 182
-  payment_term  = "hour"
-  auto_prolong  = false
   os            = "ubuntu_2404"
-  
+  payment_term  = "hour"
+# изменяемые параметры
+  name          = "test-updated-vps"                           
+  auto_prolong  = false
 }
-

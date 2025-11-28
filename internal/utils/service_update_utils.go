@@ -10,7 +10,6 @@ import (
 func ConvertToLegacy_ServiceUpdateRequest(req models.ServiceUpdateRequest) legacy.ServiceUpdateRequest {
 	return legacy.ServiceUpdateRequest{
 		Name:        req.Name,
-		PaymentTerm: req.PaymentTerm,
 		AutoProlong: req.AutoProlong,
 	}
 }

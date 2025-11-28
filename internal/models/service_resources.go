@@ -63,6 +63,5 @@ type ServiceCreateResponse struct {
 
 type ServiceUpdateRequest struct {
 	Name        *string `json:"name,omitempty"`
-	PaymentTerm *string `json:"payment_term,omitempty"`
 	AutoProlong *bool   `json:"auto_prolong,omitempty"`
 }

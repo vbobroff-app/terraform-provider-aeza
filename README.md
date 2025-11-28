@@ -68,5 +68,5 @@ cp terraform-provider-aeza ~/.terraform.d/plugins/
 
 
 ### **Resources**
-В разработке
+['aeza_service'](/docs/Resources/aeza_services.md) - Создание и управление услугой (продуктом)
 

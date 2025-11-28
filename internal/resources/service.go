@@ -281,18 +281,13 @@ func serviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}
 		req.Name = &name
 	}
 
-	if d.HasChange("payment_term") {
-		paymentTerm := d.Get("payment_term").(string)
-		req.PaymentTerm = &paymentTerm
-	}
-
 	if d.HasChange("auto_prolong") {
 		autoProlong := d.Get("auto_prolong").(bool)
 		req.AutoProlong = &autoProlong
 	}
 
 	// Отправляем запрос только если есть изменения
-	if req.Name != nil || req.PaymentTerm != nil || req.AutoProlong != nil {
+	if req.Name != nil || req.AutoProlong != nil {
 		err := client.UpdateService(ctx, id, req)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating service: %w", err))
