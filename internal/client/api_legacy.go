@@ -4,7 +4,6 @@ package client
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
 )
@@ -43,6 +42,7 @@ func (c *Client) ListServicesVPS_legacy(ctx context.Context, serviceID ...int) (
 	return response.Data.Items, nil
 }
 
+// ListServiceTypes_legacy - список типов
 func (c *Client) ListServiceTypes_legacy(ctx context.Context) ([]legacy.ServiceType, error) {
 	var response legacy.ListServiceTypesResponse
 	err := c.NewRequest("GET", "/services/types", nil).Do(ctx, &response)
@@ -71,6 +71,7 @@ func (c *Client) ListServiceGroups_Legacy(ctx context.Context, serviceType strin
 	return response.Data.Items, nil
 }
 
+// ListProducts_Legacy - список всех продуктов
 func (c *Client) ListProducts_Legacy(ctx context.Context) ([]legacy.Product, error) {
 	var response legacy.ListProductsResponse
 	err := c.NewRequest("GET", "/services/products", nil).Do(ctx, &response)
@@ -80,6 +81,7 @@ func (c *Client) ListProducts_Legacy(ctx context.Context) ([]legacy.Product, err
 	return response.Data.Items, nil
 }
 
+// Список ОС
 func (c *Client) ListOS_Legacy(ctx context.Context) ([]legacy.OperatingSystem, error) {
 	var response legacy.OSResponse
 	err := c.NewRequest("GET", "/os", nil).Do(ctx, &response)
@@ -91,7 +93,7 @@ func (c *Client) ListOS_Legacy(ctx context.Context) ([]legacy.OperatingSystem, e
 
 // CreateService_legacy создает услугу через Legacy API (существующий метод)
 func (c *Client) CreateService_legacy(ctx context.Context, req legacy.ServiceCreateRequest) (*legacy.ServiceCreateResponse, error) {
-	// ✅ ПРАВИЛЬНО: передаем структуру, а не закодированный JSON
+
 	var response legacy.ServiceCreateResponse
 	err := c.NewRequest("POST", "/services/orders", req).Do(ctx, &response)
 	if err != nil {
@@ -142,9 +144,6 @@ func (c *Client) GetService_legacy(ctx context.Context, id int64) (*legacy.Servi
 	if err != nil {
 		return nil, fmt.Errorf("failed to get service via legacy API: %w", err)
 	}
-
-	// Логируем для отладки
-	log.Printf("[DEBUG] GetService_legacy: received %d items for service ID %d", len(response.Data.Items), id)
 
 	if len(response.Data.Items) == 0 {
 		return nil, fmt.Errorf("no service found with ID %d", id)

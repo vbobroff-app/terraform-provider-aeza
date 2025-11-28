@@ -2,13 +2,10 @@
 package utils
 
 import (
-	"log"
-
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
 )
 
-// ConvertToLegacyServiceCreateRequest конвертирует Terraform модель в Legacy API запрос
 func ConvertToLegacy_ServiceCreateRequest(req models.ServiceCreateRequest) legacy.ServiceCreateRequest {
 	return legacy.ServiceCreateRequest{
 		Method:      "balance",
@@ -26,7 +23,6 @@ func ConvertToLegacy_ServiceCreateRequest(req models.ServiceCreateRequest) legac
 	}
 }
 
-// ConvertFromLegacy_ServiceCreateResponse конвертирует Legacy API ответ в Terraform модель
 func ConvertFromLegacy_ServiceCreateResponse(resp legacy.ServiceCreateResponse) models.ServiceCreateResponse {
 	// Берем первый item из ответа (обычно там один)
 	if len(resp.Data.Items) == 0 {
@@ -45,8 +41,6 @@ func ConvertFromLegacy_ServiceCreateResponse(resp legacy.ServiceCreateResponse) 
 	if len(item.CreatedServiceIds) > 0 {
 		serviceID = item.CreatedServiceIds[0]
 	}
-
-	log.Printf("[DEBUG] !!!ConvertFromLegacy_ServiceCreateResponse: Using Service ID from createdServiceIds: %d", serviceID)
 
 	// Извлекаем LocationName из product.group.payload.label
 	locationName := extractLocationName(item.Product)
@@ -77,7 +71,6 @@ func ConvertFromLegacy_ServiceCreateResponse(resp legacy.ServiceCreateResponse) 
 	}
 }
 
-// extractLocationName извлекает название локации из структуры продукта
 func extractLocationName(product legacy.Product) string {
 	if product.Group.Payload != nil {
 		if label, exists := product.Group.Payload["label"]; exists {

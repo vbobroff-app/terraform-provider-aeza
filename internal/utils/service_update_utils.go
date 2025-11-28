@@ -6,7 +6,6 @@ import (
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
 )
 
-// ConvertToLegacy_ServiceUpdateRequest конвертирует Terraform модель в Legacy API запрос
 func ConvertToLegacy_ServiceUpdateRequest(req models.ServiceUpdateRequest) legacy.ServiceUpdateRequest {
 	return legacy.ServiceUpdateRequest{
 		Name:        req.Name,

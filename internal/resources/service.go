@@ -4,7 +4,6 @@ package resources
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -182,7 +181,6 @@ func serviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 		return diag.FromErr(fmt.Errorf("error setting service data: %w", err))
 	}
 
-	log.Printf("[DEBUG] serviceRead: successfully read service ID %s", d.Id())
 	return nil
 }
 

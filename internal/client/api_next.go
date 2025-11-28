@@ -1,5 +1,4 @@
 // internal/client/api_next.go
-
 package client
 
 import (

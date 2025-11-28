@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"io"
@@ -60,9 +59,6 @@ func (r *Request) Do(ctx context.Context, result interface{}) error {
 		}
 		fullURL = fullURL + "?" + query.Encode()
 	}
-
-	// ДЕБАГ: выводим фактическое тело запроса
-	log.Printf("[DEBUG] !!!!!!!!!!ACTUAL REQUEST BODY: %s", string(requestBody))
 
 	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, r.method, fullURL, bodyReader)

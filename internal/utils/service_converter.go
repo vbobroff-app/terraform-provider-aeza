@@ -10,7 +10,6 @@ import (
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/next"
 )
 
-// ConvertNextService преобразует службу из API v2 в TerraformService
 func ConvertNextService(nextService next.Service) models.TerraformService {
 	return models.TerraformService{
 		ID:           nextService.ID,
@@ -28,7 +27,6 @@ func ConvertNextService(nextService next.Service) models.TerraformService {
 	}
 }
 
-// ConvertLegacyService преобразует службу из Legacy API в TerraformService
 func ConvertLegacyService(legacyService legacy.ServiceVPS) models.TerraformService {
 	tfService := models.TerraformService{
 		ID:           legacyService.ID,

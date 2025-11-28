@@ -8,7 +8,6 @@ import (
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/legacy"
 )
 
-// ConvertLegacyServiceGroup преобразует группу услуг из legacy API в Terraform ServiceGroup
 func ConvertLegacyServiceGroup(legacyGroup legacy.ServiceGroup) models.ServiceGroup {
 	groupType := getLegacyGroupType(legacyGroup)
 	serverType := getStringFromPayload(legacyGroup.Payload, "mode")
@@ -45,7 +44,6 @@ func ConvertLegacyServiceGroup(legacyGroup legacy.ServiceGroup) models.ServiceGr
 	return group
 }
 
-// Определяем тип группы для legacy API
 func getLegacyGroupType(legacyGroup legacy.ServiceGroup) string {
 	mode := getStringFromPayload(legacyGroup.Payload, "mode")
 	code := getStringFromPayload(legacyGroup.Payload, "code")
@@ -129,7 +127,6 @@ func getLegacyFeatures(localed map[string]interface{}) string {
 	return ""
 }
 
-// Дополнительная функция для определения подтипа серверной группы в legacy
 func getLegacyServerSubtype(legacyGroup legacy.ServiceGroup) string {
 	mode := getStringFromPayload(legacyGroup.Payload, "mode")
 	label := getStringFromPayload(legacyGroup.Payload, "label")
@@ -166,7 +163,6 @@ func getLegacyBoolFromPayload(payload map[string]interface{}, key string) bool {
 	return false
 }
 
-// ConvertLegacyServiceGroups преобразует массив групп услуг из legacy API в Terraform ServiceGroup
 func ConvertLegacyServiceGroups(legacyGroups []legacy.ServiceGroup) []models.ServiceGroup {
 	result := make([]models.ServiceGroup, len(legacyGroups))
 	for i, legacyGroup := range legacyGroups {
