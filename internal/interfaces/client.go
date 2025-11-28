@@ -22,6 +22,6 @@ type ResourceClient interface {
 
 	CreateService(ctx context.Context, req models.ServiceCreateRequest) (*models.ServiceCreateResponse, error)
 	GetService(ctx context.Context, id int64) (*models.Service, error)
-	UpdateService(ctx context.Context, id int64, req models.ServiceCreateRequest) error
+	UpdateService(ctx context.Context, id int64, req models.ServiceUpdateRequest) error
 	DeleteService(ctx context.Context, id int64) error
 }

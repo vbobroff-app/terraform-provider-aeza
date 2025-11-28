@@ -99,38 +99,6 @@ type ServiceType struct {
 	Name    string                 `json:"name"`
 }
 
-// Service представляет услугу в Aeza
-type Service struct {
-	ID               int64                  `json:"id"`
-	OwnerID          int64                  `json:"ownerId"`
-	ProductID        int64                  `json:"productId"`
-	Name             string                 `json:"name"`
-	IP               string                 `json:"ip"`
-	PaymentTerm      string                 `json:"paymentTerm"`
-	Parameters       map[string]interface{} `json:"parameters"`
-	SecureParameters map[string]interface{} `json:"secureParameters"`
-	AutoProlong      bool                   `json:"autoProlong"`
-	Backups          bool                   `json:"backups"`
-	Status           string                 `json:"status"`
-	LastStatus       string                 `json:"lastStatus"`
-	Product          Product                `json:"product"`
-	LocationCode     string                 `json:"locationCode"`
-	Prices           map[string]Price       `json:"prices"`
-	CurrentStatus    string                 `json:"currentStatus"`
-	CreatedAt        string                 `json:"createdAt"`
-	UpdatedAt        string                 `json:"updatedAt"`
-}
-
-type Price struct {
-	Value    float64 `json:"value"`
-	Currency string  `json:"currency"`
-}
-
-// ServiceGetResponse - ответ на запрос услуги
-type ServiceGetResponse struct {
-	Service Service `json:"service"`
-}
-
 type OperatingSystem struct {
 	next.OperatingSystem
 }

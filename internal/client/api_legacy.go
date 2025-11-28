@@ -152,3 +152,8 @@ func (c *Client) GetService_legacy(ctx context.Context, id int64) (*legacy.Servi
 
 	return &response, nil
 }
+
+func (c *Client) UpdateService_legacy(ctx context.Context, id int64, req legacy.ServiceUpdateRequest) error {
+	path := fmt.Sprintf("/services/%d", id)
+	return c.NewRequest("PUT", path, req).Do(ctx, nil)
+}

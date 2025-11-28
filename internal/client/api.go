@@ -144,3 +144,8 @@ func (c *Client) GetService(ctx context.Context, id int64) (*models.Service, err
 
 	return &terraformService, nil
 }
+
+func (c *Client) UpdateService(ctx context.Context, id int64, req models.ServiceUpdateRequest) error {
+	legacyReq := utils.ConvertToLegacy_ServiceUpdateRequest(req)
+	return c.UpdateService_legacy(ctx, id, legacyReq)
+}

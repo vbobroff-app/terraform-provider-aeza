@@ -273,14 +273,26 @@ func serviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("name", "payment_term", "auto_prolong") {
-		req := models.ServiceCreateRequest{
-			Name:        d.Get("name").(string),
-			PaymentTerm: d.Get("payment_term").(string),
-			AutoProlong: d.Get("auto_prolong").(bool),
-			// Не передаем ForceNew поля
-		}
+	req := models.ServiceUpdateRequest{}
 
+	// Только измененные поля будут иметь указатели
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		req.Name = &name
+	}
+
+	if d.HasChange("payment_term") {
+		paymentTerm := d.Get("payment_term").(string)
+		req.PaymentTerm = &paymentTerm
+	}
+
+	if d.HasChange("auto_prolong") {
+		autoProlong := d.Get("auto_prolong").(bool)
+		req.AutoProlong = &autoProlong
+	}
+
+	// Отправляем запрос только если есть изменения
+	if req.Name != nil || req.PaymentTerm != nil || req.AutoProlong != nil {
 		err := client.UpdateService(ctx, id, req)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating service: %w", err))

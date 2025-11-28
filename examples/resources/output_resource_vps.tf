@@ -13,5 +13,6 @@ output "service_info" {
     location_label     = aeza_service.test_vps.location_name
     group_id           = aeza_service.test_vps.group_id
     date               = aeza_service.test_vps.date
+    auto_prolong       = aeza_service.test_vps.auto_prolong
   }
 }
