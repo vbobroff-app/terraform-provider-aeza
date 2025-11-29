@@ -13,6 +13,5 @@ provider "aeza" {
   base_url = var.aeza_base_url
 }
 
-
-# Тест data source для операционных систем
-data "aeza_os_list" "available" {}
+# Data source для типов услуг
+data "aeza_service_types" "all" {}

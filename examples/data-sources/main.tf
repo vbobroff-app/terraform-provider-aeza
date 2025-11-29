@@ -14,30 +14,22 @@ provider "aeza" {
 }
 
 
-# # Data source для типов услуг
-# data "aeza_service_types" "all" {}
+# Data source для типов услуг
+data "aeza_service_types" "all" {}
 
-# # Data source для получения списка продуктов
-# data "aeza_products" "all" {}
+# Data source для получения списка продуктов
+data "aeza_products" "all" {}
 
-# # Data source для услуг пользователя
-# data "aeza_services" "all" {}
+# Data source для услуг пользователя
+data "aeza_services" "all" {}
 
-# # Data source для групп услуг, есть параметр type
-# data "aeza_service_groups" "all" {
-#   # Optional: filter by specific service type
-#   # service_type = "vps"
-# }
-
-# # Data source для операционных систем
-# data "aeza_os_list" "available" {}
-
-
-resource "aeza_service" "test_vps" {
-  name          = "test-hourly-vps"
-  product_id    = 182
-  payment_term  = "hour"
-  auto_prolong  = false
-  os            = "ubuntu_2404"
+# Data source для групп услуг, есть параметр type
+data "aeza_service_groups" "all" {
+  # Optional: filter by specific service type
+  # service_type = "vps"
 }
+
+# Data source для операционных систем
+data "aeza_os_list" "available" {}
+
 
