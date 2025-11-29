@@ -3,6 +3,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/models/next"
 )
@@ -42,4 +43,26 @@ func (c *Client) ListOS_V2(ctx context.Context) ([]next.OperatingSystem, error) 
 	}
 
 	return response, nil
+}
+
+func (c *Client) ControlService_V2(ctx context.Context, serviceID int64, action string) error {
+	// Проверяем допустимые действия
+	allowedActions := map[string]bool{
+		"suspend": true,
+		"resume":  true,
+		"restart": true,
+	}
+
+	if !allowedActions[action] {
+		return fmt.Errorf("invalid service control action: %s", action)
+	}
+
+	url := fmt.Sprintf("/v2/services/%d/ctl/%s", serviceID, action)
+
+	err := c.NewRequest("POST", url, nil).Do(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("service control request failed for action %s: %w", action, err)
+	}
+
+	return nil
 }

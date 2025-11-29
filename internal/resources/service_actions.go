@@ -1,3 +1,4 @@
+// /internal/resources/service_actions.go
 package resources
 
 import (
@@ -9,12 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/vbobroff-app/terraform-provider-aeza/internal/interfaces"
-	"github.com/vbobroff-app/terraform-provider-aeza/internal/models"
 )
 
 func ServiceActionsResource() *schema.Resource {
 	return &schema.Resource{
-		Description: "Resource for managing service actions (prolong, reinstall, reboot)",
+		Description: "Resource for managing service actions (on, off, reboot)",
 
 		CreateContext: actionsCreate,
 		ReadContext:   actionsRead,
@@ -28,64 +28,17 @@ func ServiceActionsResource() *schema.Resource {
 				ForceNew:    true,
 				Description: "ID of the service to manage",
 			},
-			"prolong": {
-				Type:        schema.TypeList,
+			"is_active": {
+				Type:        schema.TypeBool,
 				Optional:    true,
-				MaxItems:    1,
-				Description: "Prolong service configuration",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"method": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Default:     "balance",
-							Description: "Payment method (balance, sms, etc.)",
-						},
-						"term": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Payment term (hour, day, month)",
-						},
-						"count": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Default:     1,
-							Description: "Number of terms to prolong",
-						},
-						// Вычисляемые поля транзакции prolong
-						"transaction_id": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "ID of the transaction created by the prolong operation",
-						},
-						"transaction_amount": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Amount of the transaction",
-						},
-						"transaction_status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Status of the transaction (created, pending, completed)",
-						},
-						"transaction_type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of the transaction (prolong, etc.)",
-						},
-						"transaction_created_at": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Timestamp when the transaction was created",
-						},
-						"force": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "Force prolongation on every apply",
-						},
-					},
-				},
+				Default:     true,
+				Description: "Power state of the service (true = resume/power on, false = suspend/power off)",
+			},
+			"restart": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Restart the service",
 			},
 		},
 	}
@@ -95,38 +48,39 @@ func actionsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}
 	client := meta.(interfaces.ResourceClient)
 	serviceID := int64(d.Get("service_id").(int))
 
-	// Handle prolong operation
-	if v, ok := d.GetOk("prolong"); ok {
-		prolongConfig := v.([]interface{})[0].(map[string]interface{})
+	service, err := client.GetService(ctx, serviceID)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error getting service status: %w", err))
+	}
 
-		req := models.ServiceProlongRequest{
-			Method: prolongConfig["method"].(string),
-			Term:   prolongConfig["term"].(string),
-			Count:  int64(prolongConfig["count"].(int)),
+	isActive := d.Get("is_active").(bool)
+
+	if (service.Status == "active" && !isActive) || (service.Status == "suspended" && isActive) {
+		var action string
+		if isActive {
+			action = "resume"
+		} else {
+			action = "suspend"
 		}
 
-		resp, err := client.ProlongService(ctx, serviceID, req)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("error prolonging service: %w", err))
+		if err := client.ControlService(ctx, serviceID, action); err != nil {
+			return diag.FromErr(fmt.Errorf("error %s service: %w", action, err))
 		}
+		log.Printf("[INFO] Successfully %s service %d (status: %s -> desired: %v)",
+			action, serviceID, service.Status, isActive)
+	} else {
+		log.Printf("[DEBUG] Skipping power operation - service %d already in desired state: %s",
+			serviceID, service.Status)
+	}
 
-		if resp != nil && resp.Transaction != nil {
-			updatedProlongConfig := map[string]interface{}{
-				"method":                 req.Method,
-				"term":                   req.Term,
-				"count":                  req.Count,
-				"transaction_id":         resp.Transaction.ID,
-				"transaction_amount":     resp.Transaction.Amount,
-				"transaction_status":     resp.Transaction.Status,
-				"transaction_type":       resp.Transaction.Type,
-				"transaction_created_at": resp.Transaction.CreatedAt,
+	if d.Get("restart").(bool) {
+		if service.Status == "active" {
+			if err := client.ControlService(ctx, serviceID, "restart"); err != nil {
+				return diag.FromErr(fmt.Errorf("error restarting service: %w", err))
 			}
-
-			if err := d.Set("prolong", []interface{}{updatedProlongConfig}); err != nil {
-				return diag.FromErr(fmt.Errorf("error updating prolong configuration: %w", err))
-			}
-
-			log.Printf("[INFO] Successfully prolonged service %d for %d %s", serviceID, req.Count, req.Term)
+			log.Printf("[INFO] Successfully restarted service %d", serviceID)
+		} else {
+			log.Printf("[WARN] Cannot restart service %d - current status is %s", serviceID, service.Status)
 		}
 	}
 
@@ -154,8 +108,8 @@ func actionsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 }
 
 func actionsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// For update, we can handle prolong operation changes
-	if d.HasChange("prolong") {
+	// For update, we can handle is_active or restart operation changes
+	if d.HasChange("is_active") || d.HasChange("restart") {
 		return actionsCreate(ctx, d, meta)
 	}
 	return nil

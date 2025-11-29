@@ -26,4 +26,5 @@ type ResourceClient interface {
 	DeleteService(ctx context.Context, id int64) error
 
 	ProlongService(ctx context.Context, serviceID int64, req models.ServiceProlongRequest) (*models.ServiceProlongResponse, error)
+	ControlService(ctx context.Context, serviceID int64, action string) error
 }

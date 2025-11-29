@@ -23,13 +23,20 @@ resource "aeza_service" "test_vps" {
   auto_prolong  = false
 }
 
-resource "aeza_service_actions" "prolong_service" {
+
+resource "aeza_service_prolong" "extend" {
   service_id = aeza_service.test_vps.id
-  
-  prolong {
-    term = "hour"
-    # method = "balance" (по умолчанию)
-    count = 1
-    # force  = false (по умолчанию)
-  }
+
+  # method = "balance" (по умолчанию)
+  term       = "hour" 
+  term_count      = 1
+  # force  = true # (по умолчанию)
+}
+
+resource "aeza_service_actions" "manage" {
+  service_id = aeza_service.test_vps.id
+
+
+  is_active = true  # выключить сервис
+  ## restart   = true   # перезагрузить (выполнится если is_active = true)
 }

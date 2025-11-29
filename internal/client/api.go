@@ -160,3 +160,8 @@ func (c *Client) ProlongService(ctx context.Context, serviceID int64, req models
 
 	return resp, nil
 }
+
+func (c *Client) ControlService(ctx context.Context, serviceID int64, action string) error {
+
+	return c.ControlService_V2(ctx, serviceID, action)
+}

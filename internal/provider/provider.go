@@ -33,6 +33,7 @@ func New() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"aeza_service":         resources.ServiceResource(),
 			"aeza_service_actions": resources.ServiceActionsResource(),
+			"aeza_service_prolong": resources.ServiceProlongResource(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
