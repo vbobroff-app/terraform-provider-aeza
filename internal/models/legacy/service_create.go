@@ -65,7 +65,7 @@ type Transaction struct {
 	PerformedAt       interface{}            `json:"performedAt"`
 	CreatedAt         int64                  `json:"createdAt"`
 	Type              string                 `json:"type"`
-	ServiceID         interface{}            `json:"serviceId"`
+	ServiceID         int64                  `json:"serviceId"`
 	ItemSlug          interface{}            `json:"itemSlug"`
 	Description       interface{}            `json:"description"`
 	RandomString      interface{}            `json:"randomString"`
@@ -73,7 +73,7 @@ type Transaction struct {
 	InvoiceID         int64                  `json:"invoiceId"`
 	Invoice           interface{}            `json:"invoice"`
 	PrettyAmount      PrettyAmount           `json:"prettyAmount"`
-	OrderInfo         OrderInfo              `json:"orderInfo"`
+	OrderInfo         interface{}            `json:"orderInfo"`
 	PrettyBonusAmount PrettyAmount           `json:"prettyBonusAmount"`
 }
 

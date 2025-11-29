@@ -67,9 +67,3 @@ type ServiceUpdateRequest struct {
 	Name        *string `json:"name,omitempty"`
 	AutoProlong *bool   `json:"auto_prolong,omitempty"`
 }
-
-type ServiceProlongRequest struct {
-	Method string `json:"method"`
-	Term   string `json:"term"`
-	Count  int64  `json:"count"`
-}

@@ -156,3 +156,16 @@ func (c *Client) UpdateService_legacy(ctx context.Context, id int64, req legacy.
 	path := fmt.Sprintf("/services/%d", id)
 	return c.NewRequest("PUT", path, req).Do(ctx, nil)
 }
+
+// ProlongService_Legacy продлевает услугу через Legacy API
+func (c *Client) ProlongService_Legacy(ctx context.Context, serviceID int64, req legacy.ServiceProlongRequest) (*legacy.ServiceProlongResponse, error) {
+	url := fmt.Sprintf("/services/%d/prolong", serviceID)
+
+	var legacyResp legacy.ServiceProlongResponse
+	err := c.NewRequest("POST", url, req).Do(ctx, &legacyResp)
+	if err != nil {
+		return nil, fmt.Errorf("prolong service request failed: %w", err)
+	}
+
+	return &legacyResp, nil
+}

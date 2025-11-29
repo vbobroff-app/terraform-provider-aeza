@@ -144,3 +144,19 @@ func (c *Client) UpdateService(ctx context.Context, id int64, req models.Service
 	legacyReq := utils.ConvertToLegacy_ServiceUpdateRequest(req)
 	return c.UpdateService_legacy(ctx, id, legacyReq)
 }
+
+// ProlongService продлевает услугу
+func (c *Client) ProlongService(ctx context.Context, serviceID int64, req models.ServiceProlongRequest) (*models.ServiceProlongResponse, error) {
+
+	legacyReq := utils.ConvertToLegacy_ServiceProlongRequest(req)
+
+	// 2. Вызываем legacy метод (в будущем может быть V2 метод)
+	legacyResp, err := c.ProlongService_Legacy(ctx, serviceID, legacyReq)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := utils.ConvertFromLegacy_ServiceProlongResponse(legacyResp)
+
+	return resp, nil
+}

@@ -22,3 +22,13 @@ resource "aeza_service" "test_vps" {
   name          = "test-updated-vps"                           
   auto_prolong  = false
 }
+
+resource "aeza_service_actions" "prolong_service" {
+  service_id = aeza_service.test_vps.id
+  
+  prolong {
+    term = "hour"
+    # method = "balance" (по умолчанию)
+    count = 1
+  }
+}

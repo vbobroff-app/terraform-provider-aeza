@@ -24,4 +24,6 @@ type ResourceClient interface {
 	GetService(ctx context.Context, id int64) (*models.Service, error)
 	UpdateService(ctx context.Context, id int64, req models.ServiceUpdateRequest) error
 	DeleteService(ctx context.Context, id int64) error
+
+	ProlongService(ctx context.Context, serviceID int64, req models.ServiceProlongRequest) (*models.ServiceProlongResponse, error)
 }
