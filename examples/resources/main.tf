@@ -30,5 +30,6 @@ resource "aeza_service_actions" "prolong_service" {
     term = "hour"
     # method = "balance" (по умолчанию)
     count = 1
+    # force  = false (по умолчанию)
   }
 }

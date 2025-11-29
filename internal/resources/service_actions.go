@@ -78,6 +78,12 @@ func ServiceActionsResource() *schema.Resource {
 							Computed:    true,
 							Description: "Timestamp when the transaction was created",
 						},
+						"force": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Force prolongation on every apply",
+						},
 					},
 				},
 			},
