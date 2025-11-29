@@ -107,12 +107,23 @@ func ServiceResource() *schema.Resource {
 				Computed: true,
 			},
 			"created_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Service create timestamp",
 			},
 			"updated_at": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"expires_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Service expiration timestamp",
+			},
+			"purchased_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Service purchase timestamp",
 			},
 		},
 	}
@@ -216,6 +227,12 @@ func setServiceGetResponse(d *schema.ResourceData, service models.Service) error
 	}
 	if err := setFieldIfNotEmpty(d, "updated_at", service.UpdatedAt); err != nil {
 		return fmt.Errorf("error setting updated_at: %w", err)
+	}
+	if err := setFieldIfNotEmpty(d, "expires_at", service.ExpiresAt); err != nil {
+		return fmt.Errorf("error setting expires_at: %w", err)
+	}
+	if err := setFieldIfNotEmpty(d, "purchased_at", service.PurchasedAt); err != nil { // ← ИСПРАВИТЬ
+		return fmt.Errorf("error setting purchased_at: %w", err)
 	}
 
 	return nil

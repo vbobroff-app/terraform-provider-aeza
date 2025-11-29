@@ -14,5 +14,6 @@ output "service_info" {
     group_id           = aeza_service.test_vps.group_id
     date               = aeza_service.test_vps.date
     auto_prolong       = aeza_service.test_vps.auto_prolong
+    expires_at         = aeza_service.test_vps.expires_at
   }
 }

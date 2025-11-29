@@ -21,6 +21,8 @@ type Service struct {
 	CurrentStatus    string                 `json:"currentStatus"`
 	CreatedAt        string                 `json:"createdAt"`
 	UpdatedAt        string                 `json:"updatedAt"`
+	ExpiresAt        string                 `json:"expiresAt"`
+	PurchasedAt      string                 `json:"purchasedAt"`
 }
 
 type Price struct {
@@ -64,4 +66,10 @@ type ServiceCreateResponse struct {
 type ServiceUpdateRequest struct {
 	Name        *string `json:"name,omitempty"`
 	AutoProlong *bool   `json:"auto_prolong,omitempty"`
+}
+
+type ServiceProlongRequest struct {
+	Method string `json:"method"`
+	Term   string `json:"term"`
+	Count  int64  `json:"count"`
 }

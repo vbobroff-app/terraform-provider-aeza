@@ -28,6 +28,8 @@ func ConvertLegacyServiceGetToTerraform(legacyService legacy.ServiceGet) models.
 	// }
 
 	createdAt := FormatDateFromUnix(legacyService.Timestamps.CreatedAt)
+	expiresAt := FormatDateFromUnix(legacyService.Timestamps.ExpiresAt)
+	purchasedAt := FormatDateFromUnix(legacyService.Timestamps.PurchasedAt)
 
 	return models.Service{
 		ID:            int64(legacyService.ID),
@@ -46,6 +48,8 @@ func ConvertLegacyServiceGetToTerraform(legacyService legacy.ServiceGet) models.
 		CurrentStatus: legacyService.CurrentStatus,
 		CreatedAt:     createdAt,
 		UpdatedAt:     "",
+		ExpiresAt:     expiresAt,
+		PurchasedAt:   purchasedAt,
 	}
 }
 
