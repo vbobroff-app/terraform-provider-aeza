@@ -68,5 +68,9 @@ cp terraform-provider-aeza ~/.terraform.d/plugins/
 
 
 ### **Resources**
-['aeza_service'](/docs/Resources/aeza_services.md) - Создание и управление услугой (продуктом)
+[`aeza_service`](/docs/Resources/aeza_services.md) - Создание и управление услугой (продуктом)
+
+[`aeza_service_prolong`](/docs/Resources/aeza_service_prolong.md) - Продление и изменение периода оплаты услуги
+
+[`aeza_service_actions`](/docs/Resources/aeza_servise_actions.md) - Управление действиями: включение, выключение, перезагрузка
 

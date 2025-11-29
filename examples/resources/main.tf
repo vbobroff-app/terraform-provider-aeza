@@ -30,12 +30,11 @@ resource "aeza_service_prolong" "extend" {
   # method = "balance" (по умолчанию)
   term       = "hour" 
   term_count      = 1
-  # force  = true # (по умолчанию)
+  # force  = false (по умолчанию)
 }
 
 resource "aeza_service_actions" "manage" {
   service_id = aeza_service.test_vps.id
-
 
   is_active = true  # выключить сервис
   ## restart   = true   # перезагрузить (выполнится если is_active = true)
