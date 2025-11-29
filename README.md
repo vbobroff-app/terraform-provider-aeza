@@ -74,3 +74,6 @@ cp terraform-provider-aeza ~/.terraform.d/plugins/
 
 [`aeza_service_actions`](/docs/Resources/aeza_servise_actions.md) - Управление действиями: включение, выключение, перезагрузка
 
+## License
+
+This project is licensed under the Mozilla Public License 2.0 - see the [LICENSE](LICENSE) file for details.
