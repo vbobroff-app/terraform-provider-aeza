@@ -57,8 +57,8 @@ func ConvertLegacyService(legacyService legacy.ServiceVPS) models.TerraformServi
 	}
 
 	// Преобразование времени
-	tfService.CreatedAt = convertUnixToISO(legacyService.Timestamps.CreatedAt)
-	tfService.ExpiresAt = convertUnixToISO(legacyService.Timestamps.ExpiresAt)
+	tfService.CreatedAt = convertUnixToISO(int64(legacyService.Timestamps.CreatedAt))
+	tfService.ExpiresAt = convertUnixToISO(int64(legacyService.Timestamps.ExpiresAt))
 
 	// Расчет цены из доступных источников
 	tfService.Price = calculatePriceFromLegacy(legacyService)
@@ -213,10 +213,10 @@ func ConvertLegacyVPSToTerraform(vpsService legacy.ServiceVPS) models.TerraformS
 	}
 
 	// Временные метки
-	tfService.CreatedAt = convertUnixToISO(vpsService.Timestamps.CreatedAt)
-	tfService.ExpiresAt = convertUnixToISO(vpsService.Timestamps.ExpiresAt)
-	tfService.CreatedDate = formatDisplayDate(vpsService.Timestamps.CreatedAt)
-	tfService.ExpiresDate = formatDisplayDate(vpsService.Timestamps.ExpiresAt)
+	tfService.CreatedAt = convertUnixToISO(int64(vpsService.Timestamps.CreatedAt))
+	tfService.ExpiresAt = convertUnixToISO(int64(vpsService.Timestamps.ExpiresAt))
+	tfService.CreatedDate = formatDisplayDate(int64(vpsService.Timestamps.CreatedAt))
+	tfService.ExpiresDate = formatDisplayDate(int64(vpsService.Timestamps.ExpiresAt))
 
 	return tfService
 }

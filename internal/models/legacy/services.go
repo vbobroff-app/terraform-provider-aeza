@@ -5,6 +5,8 @@
 // models/legacy/services.go
 package legacy
 
+import "fmt"
+
 type Service struct {
 	ID            int     `json:"id"`
 	OwnerID       int     `json:"ownerId"`
@@ -92,9 +94,35 @@ type IPv6Address struct {
 }
 
 type ServiceTimestamps struct {
-	CreatedAt   int64 `json:"createdAt"`   // Unix timestamp
-	ExpiresAt   int64 `json:"expiresAt"`   // Unix timestamp
-	PurchasedAt int64 `json:"purchasedAt"` // Unix timestamp
+	CreatedAt   FlexibleInt64 `json:"createdAt"`   // Unix timestamp (can be int64 or string)
+	ExpiresAt   FlexibleInt64 `json:"expiresAt"`   // Unix timestamp (can be int64 or string)
+	PurchasedAt FlexibleInt64 `json:"purchasedAt"` // Unix timestamp (can be int64 or string)
+}
+
+// FlexibleInt64 handles JSON fields that can be either int64 or string
+type FlexibleInt64 int64
+
+func (f *FlexibleInt64) UnmarshalJSON(data []byte) error {
+	// Remove quotes if present (string case)
+	s := string(data)
+	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
+		s = s[1 : len(s)-1]
+	}
+	
+	// Handle empty or null
+	if s == "" || s == "null" {
+		*f = 0
+		return nil
+	}
+	
+	// Parse as int64
+	var i int64
+	_, err := fmt.Sscanf(s, "%d", &i)
+	if err != nil {
+		return fmt.Errorf("cannot parse '%s' as int64: %w", s, err)
+	}
+	*f = FlexibleInt64(i)
+	return nil
 }
 
 type ConfigurationItem struct {

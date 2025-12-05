@@ -31,9 +31,9 @@ func ConvertLegacyServiceGetToTerraform(legacyService legacy.ServiceGet) models.
 	//     parameters["kubernetes_version"] = legacyService.KubernetesVersion
 	// }
 
-	createdAt := FormatDateFromUnix(legacyService.Timestamps.CreatedAt)
-	expiresAt := FormatDateFromUnix(legacyService.Timestamps.ExpiresAt)
-	purchasedAt := FormatDateFromUnix(legacyService.Timestamps.PurchasedAt)
+	createdAt := FormatDateFromUnix(int64(legacyService.Timestamps.CreatedAt))
+	expiresAt := FormatDateFromUnix(int64(legacyService.Timestamps.ExpiresAt))
+	purchasedAt := FormatDateFromUnix(int64(legacyService.Timestamps.PurchasedAt))
 
 	return models.Service{
 		ID:            int64(legacyService.ID),
